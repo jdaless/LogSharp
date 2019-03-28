@@ -44,6 +44,15 @@ namespace LogSharp
             return w.ContainsFact(this);
         }
 
+        bool IFact.Coerce(World w)
+        {
+            if(!w.ContainsFact(this))
+            {
+                return w.Add(this);
+            }
+            return true;
+        }
+
         /// <summary>
         /// Right implication, the rule is satisfied if the right argument 
         /// follows from the left one.
@@ -65,6 +74,11 @@ namespace LogSharp
         public static Rule operator <(Fact r1, IFact r2)
         {
             return new Rule.ImpliedRule(r2,r1);
+        }
+
+        public static Rule DoubleImply(Fact r1, IFact r2)
+        {
+            return (r1 > r2) ^ (r1 < r2);
         }
 
         public static Rule operator &(Fact r1, IFact r2)

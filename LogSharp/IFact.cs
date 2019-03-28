@@ -7,5 +7,6 @@ namespace LogSharp
     public interface IFact
     {
         bool Evaluate(World w);
+        bool Coerce(World w);
     }
 }

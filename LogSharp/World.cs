@@ -7,7 +7,6 @@ namespace LogSharp
     public class World
     {
         private readonly IList<IFact> _state = new List<IFact>();
-        private readonly IList<object> _ontology = new List<object>();
 
         /// <summary>
         /// Adds a new rule to the state of the world. Returns true on success,
@@ -16,15 +15,12 @@ namespace LogSharp
         /// </summary>
         public bool Add(IFact r)
         {
-            if (r is Fact)
-            {
-                foreach (var arg in ((Fact)r)._args)
-                {
-                    if (!(arg is Variable)) { _ontology.Add(arg); }
-                }
+            foreach (IFact f in _state){
+                // check to see if r contradicts f
+                // return false if so
             }
             _state.Add(r);
-            return true;
+             return true;
         }
 
         /// <summary>

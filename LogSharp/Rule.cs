@@ -14,6 +14,11 @@ namespace LogSharp
             return false;
         }
 
+        bool IFact.Coerce(World w)
+        {
+            return ((IFact)this).Evaluate(w) ? true : w.Add(this);
+        }
+
         /// <summary>
         /// Right implication, the rule is satisfied if the right argument 
         /// follows from the left one.
@@ -35,6 +40,11 @@ namespace LogSharp
         public static Rule operator <(Rule r1, IFact r2)
         {
             return new ImpliedRule(r2,r1);
+        }
+
+        public static Rule DoubleImply(Rule r1, IFact r2)
+        {
+            return (r1 > r2) ^ (r1 < r2);
         }
 
         public static Rule operator &(Rule r1, IFact r2)
@@ -75,6 +85,10 @@ namespace LogSharp
             {
                 return _left.Evaluate(w) & _right.Evaluate(w);
             }
+            bool IFact.Coerce(World w)
+            {
+                return _left.Coerce(w) & _right.Coerce(w);
+            }
         }
 
         internal class DisjoinedRule : Rule, IFact
@@ -105,6 +119,18 @@ namespace LogSharp
             {
                 return (!_left.Evaluate(w)) | _right.Evaluate(w);
             }
+            bool IFact.Coerce(World w)
+            {
+                if(_left.Evaluate(w))
+                {
+                    return _right.Coerce(w);
+                }
+                if(!_right.Evaluate(w))
+                {
+                    return ((IFact) new NegatedRule(_left)).Coerce(w);
+                }
+                return true;
+            }
         }
 
         internal class NegatedRule : Rule, IFact
@@ -115,6 +141,10 @@ namespace LogSharp
                 _left = a;
             }
             bool IFact.Evaluate(World w)
+            {
+                return !_left.Evaluate(w);
+            }
+            bool IFact.Coerce(World w)
             {
                 return !_left.Evaluate(w);
             }
