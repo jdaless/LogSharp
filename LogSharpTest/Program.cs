@@ -17,12 +17,19 @@ namespace LogSharpTest
             // Create a fact that is not added to the world
             Fact somethingFalse = new Fact();
 
+            Console.Out.Write("somethingTrue:   ");
             Console.Out.WriteLine(w.Query(somethingTrue)); // True
+            Console.Out.Write("~somethingTrue:  ");
             Console.Out.WriteLine(w.Query(~somethingTrue)); // False
+            Console.Out.Write("somethingFalse:  ");
             Console.Out.WriteLine(w.Query(somethingFalse)); // False
+            Console.Out.Write("~somethingFalse: ");
             Console.Out.WriteLine(w.Query(~somethingFalse)); // True
+            Console.Out.Write("somethingTrue | somethingFalse: ");
             Console.Out.WriteLine(w.Query(somethingTrue | somethingFalse)); // True
+            Console.Out.Write("somethingTrue & somethingFalse: ");
             Console.Out.WriteLine(w.Query(somethingTrue & somethingFalse)); // False
+            Console.Out.Write("somethingTrue & somethingTrue:  ");
             Console.Out.WriteLine(w.Query(somethingTrue & somethingTrue)); // True
 
             // Predicates with names
@@ -31,7 +38,9 @@ namespace LogSharpTest
             // car and fire truck are both red
             w.Add(red["car"]);
             w.Add(red["fire truck"]);
+            Console.Out.Write("red[\"car\"]:   ");
             Console.Out.WriteLine(w.Query(red["car"])); // True
+            Console.Out.Write("red[\"grass\"]: ");
             Console.Out.WriteLine(w.Query(red["grass"])); // False
 
             // Rules with variables
@@ -60,10 +69,6 @@ namespace LogSharpTest
             //}
             //Console.Out.WriteLine(w.Query(isSmallestThing["a"]));
             //Console.Out.WriteLine(w.Query(isSmallestThing["b"]));
-
-
-            Console.In.Read();
-
         }
     }
 }
