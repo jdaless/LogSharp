@@ -67,6 +67,20 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void Relationships()
+        {
+            World w = new World();
+            Rule likes = new Rule();
+            w.Add(likes["mary", "food"]);
+            w.Add(likes["mary", "wine"]);
+            w.Add(likes["john", "wine"]);
+            w.Add(likes["john", "mary"]);
+            Assert.IsTrue(w.Query(likes["mary","food"]));
+            Assert.IsTrue(w.Query(likes["john","wine"]));
+            Assert.IsFalse(w.Query(likes["john","food"]));
+        }
+
+        [TestMethod]
         public void Socrates()
         {
             World w = new World();
