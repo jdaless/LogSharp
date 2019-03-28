@@ -32,6 +32,12 @@ namespace LogSharpTest
             Console.Out.Write("somethingTrue & somethingTrue:  ");
             Console.Out.WriteLine(w.Query(somethingTrue & somethingTrue)); // True
 
+            Fact implicans = new Fact();
+            w.Add(somethingTrue > implicans);
+            Console.Out.Write("modus ponens:    ");
+            Console.Out.WriteLine(w.Query(implicans)); // True
+
+
             // Predicates with names
             Rule red = new Rule();
 
@@ -53,22 +59,22 @@ namespace LogSharpTest
             w.Add(man["socrates"]);
             Console.Out.WriteLine(w.Query(mortal["socrates"])); // True
 
-            //// Setting variable
-            //Variable m = new Variable();
-            //w.Query(red[m]);
-            //Console.Out.WriteLine(string.Join(", ",m.Values));
+            // Setting variable
+            Variable m = new Variable();
+            w.Query(red[m]);
+            Console.Out.WriteLine(string.Join(", ",m));
 
-            //// Use of empty variable
-            //Rule isSmallestThing = new Rule();
-            //Rule isLargerThan = new Rule();
-            //w.Add(isLargerThan["a", "b"]);
-            //using (var x = new Variable())
-            //{
-            //    w.Add(isSmallestThing[x] <
-            //        ~isLargerThan[x, Variable._]);
-            //}
-            //Console.Out.WriteLine(w.Query(isSmallestThing["a"]));
-            //Console.Out.WriteLine(w.Query(isSmallestThing["b"]));
+            // Use of empty variable
+            Rule isSmallestThing = new Rule();
+            Rule isLargerThan = new Rule();
+            w.Add(isLargerThan["a", "b"]);
+            using (var x = new Variable())
+            {
+               w.Add(isSmallestThing[x] <
+                   ~isLargerThan[x, Variable._]);
+            }
+            Console.Out.WriteLine(w.Query(isSmallestThing["a"]));
+            Console.Out.WriteLine(w.Query(isSmallestThing["b"]));
         }
     }
 }
