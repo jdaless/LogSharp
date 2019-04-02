@@ -8,5 +8,13 @@ namespace LogSharp
     {
         bool Evaluate(World w);
         bool Coerce(World w);
+        MatchResult Match(IFact goal, World w);
+    }
+
+    public enum MatchResult
+    {
+        Satisfied,
+        Inconclusive,
+        Contradicted
     }
 }

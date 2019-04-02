@@ -4,19 +4,11 @@ namespace LogSharp
 {
     public class Rule : IFact
     {
+        public static Rule Equality;
+
         public Fact this[params object[] args]
         {
             get { return new Fact(this, args); }
-        }
-
-        bool IFact.Evaluate(World w)
-        {
-            return false;
-        }
-
-        bool IFact.Coerce(World w)
-        {
-            return ((IFact)this).Evaluate(w) ? true : w.Add(this);
         }
 
         /// <summary>
@@ -45,6 +37,21 @@ namespace LogSharp
         public static Rule DoubleImply(Rule r1, IFact r2)
         {
             return (r1 > r2) ^ (r1 < r2);
+        }
+
+        public bool Evaluate(World w)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Coerce(World w)
+        {
+            throw new NotImplementedException();
+        }
+
+        public MatchResult Match(IFact goal, World w)
+        {
+            throw new NotImplementedException();
         }
 
         public static Rule operator &(Rule r1, IFact r2)
@@ -89,6 +96,11 @@ namespace LogSharp
             {
                 return _left.Coerce(w) & _right.Coerce(w);
             }
+
+            public MatchResult Match(IFact goal, World w)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         internal class DisjoinedRule : Rule, IFact
@@ -100,6 +112,17 @@ namespace LogSharp
                 _left = a;
                 _right = b;
             }
+
+            public bool Coerce(World w)
+            {
+                throw new NotImplementedException();
+            }
+
+            public MatchResult Match(IFact goal, World w)
+            {
+                throw new NotImplementedException();
+            }
+
             bool IFact.Evaluate(World w)
             {
                 return _left.Evaluate(w) | _right.Evaluate(w);
@@ -131,6 +154,11 @@ namespace LogSharp
                 }
                 return true;
             }
+
+            public MatchResult Match(IFact goal, World w)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         internal class NegatedRule : Rule, IFact
@@ -147,6 +175,11 @@ namespace LogSharp
             bool IFact.Coerce(World w)
             {
                 return !_left.Evaluate(w);
+            }
+
+            public MatchResult Match(IFact goal, World w)
+            {
+                throw new NotImplementedException();
             }
         }
     }

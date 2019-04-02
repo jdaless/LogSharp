@@ -19,9 +19,11 @@ A lot of the tests will fail, they're just there to measure progress.
 
 ## Example
 
-Prolog pulled from [here](http://www.cs.toronto.edu/~sheila/384/w11/simple-prolog-examples.html) and C# code is part of the unit tests.
+Prolog pulled and C# code is part of the unit tests.
 
 ### Relationships
+
+From [here](http://www.cs.toronto.edu/~sheila/384/w11/simple-prolog-examples.html) 
 
 #### Prolog In
 ```prolog
@@ -32,13 +34,13 @@ likes(john,mary).
 ```
 #### Prolog Console
 ```prolog
-| ?- likes(mary,food). 
- yes.
-| ?- likes(john,wine). 
- yes.
-| ?- likes(john,food). 
- no.
- ```
+?- likes(mary,food). 
+true.
+?- likes(john,wine). 
+true.
+?- likes(john,food). 
+false.
+```
  
 #### C# In 
 ```cs
@@ -57,4 +59,56 @@ Console.WriteLine(w.Query(likes["john","food"]);
 True
 True
 False
+```
+### Abraham
+
+From [here](http://cg.huminf.aau.dk/Module_II/1063.html)
+
+#### Prolog in
+```prolog
+son(ishmael, abraham, mother_is_slave).
+son(isaac, abraham, mother_is_free).
+patriarch(abraham).
+freeborn(P,S) :- patriarch(P), 
+                 son(S,P,F),
+                 eq(F,mother_is_free).
+```
+
+#### Prolog Console
+```prolog
+?- freeborn(X,Y).
+X = abraham,
+Y = isaac.
+```
+
+#### C# In
+```cs
+World w = new World();
+Rule son = new Rule();
+Rule patriarch = new Rule();
+Rule freeborn = new Rule();
+w.Add(son["ishmael", "abraham", "mother_is_slave"]);
+w.Add(son["isaac", "abraham", "mother_is_free"]);
+w.Add(patriarch["abraham"]);
+using(var p = new Variable())
+using(var s = new Variable())
+using(var f = new Variable())
+{
+    w.Add(freeborn[p,s] < 
+        patriarch[p] ^ 
+        son[s,p,f] ^ 
+        Rule.Equality[f, "mother_is_free"]);
+}
+using(var x = new Variable())
+using(var y = new Variable())
+{
+    w.Query(freeborn[x,y]);
+    Console.WriteLine(x.OfType<string>().Single());
+    Console.WriteLine(y.OfType<string>().Single());
+}
+```
+#### C# Console
+```cs
+abraham
+isaac
 ```

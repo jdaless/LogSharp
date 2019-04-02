@@ -81,6 +81,19 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void Variables(){
+            World w = new World();
+            Rule red = new Rule();
+            w.Add(red["car"]);
+            w.Add(red["fire truck"]);
+            using(var x = new Variable()){
+                Assert.IsTrue(w.Query(red[x]));
+                Assert.IsTrue(x.OfType<string>().Any((s) => s.Equals("car")));
+                Assert.IsTrue(x.OfType<string>().Any((s) => s.Equals("fire truck")));
+            }
+        }
+
+        [TestMethod]
         public void Socrates()
         {
             World w = new World();
@@ -88,7 +101,7 @@ namespace UnitTests
             // Rules with variables
             Rule man = new Rule();
             Rule mortal = new Rule();
-            using (var x = new Variable<string>())
+            using (var x = new Variable())
             {
                 w.Add(man[x] > mortal[x]);
             }
@@ -105,77 +118,37 @@ namespace UnitTests
             w.Add(red["fire truck"]);
 
             // Setting variable
-            var m = new Variable<string>();
+            var m = new Variable();
             w.Query(red[m]);
-            Assert.IsTrue(m.Any((s) => s.Equals("car")));
-            Assert.IsTrue(m.Any((s) => s.Equals("fire truck")));
+            Assert.IsTrue(m.OfType<string>().Any((s) => s.Equals("car")));
+            Assert.IsTrue(m.OfType<string>().Any((s) => s.Equals("fire truck")));
         }
 
         [TestMethod]
-        public void Family()
+        public void Abraham()
         {
             World w = new World();
-
-            Rule parent = new Rule();
-            Rule child = new Rule();
-            Rule gparent = new Rule();
-            Rule sibling = new Rule();
-
-            // a child of a parent
-            using(var p = new Variable<string>())
-            using(var c = new Variable<string>())
+            Rule son = new Rule();
+            Rule patriarch = new Rule();
+            Rule freeborn = new Rule();
+            w.Add(son["ishmael", "abraham", "mother_is_slave"]);
+            w.Add(son["isaac", "abraham", "mother_is_free"]);
+            w.Add(patriarch["abraham"]);
+            using(var p = new Variable())
+            using(var s = new Variable())
+            using(var f = new Variable())
             {
-                w.Add(Fact.DoubleImply(
-                    child[c,p],
-                    parent[p,c]));
+                w.Add(freeborn[p,s] < 
+                    patriarch[p] ^ 
+                    son[s,p,f] ^ 
+                    Rule.Equality[f, "mother_is_free"]);
             }
-
-            // sibling is reflexive
-            using(var s1 = new Variable<string>())
-            using(var s2 = new Variable<string>())
+            using(var x = new Variable())
+            using(var y = new Variable())
             {
-                w.Add(Fact.DoubleImply(
-                    sibling[s1,s2],
-                    sibling[s2,s1]));
-            }
-
-
-            // grandparents are parents' parents
-            using(var g = new Variable<string>())
-            using(var p = new Variable<string>())
-            using(var c = new Variable<string>())
-            {
-                w.Add(Fact.DoubleImply(
-                    gparent[g,c],
-                    parent[p,c] ^ parent[g,p]));
-            }
-
-            // siblings share the same parent
-            using(var s1 = new Variable<string>())
-            using(var s2 = new Variable<string>())
-            using(var p = new Variable<string>())
-            {
-                w.Add(Fact.DoubleImply(
-                    sibling[s1,s2], 
-                    parent[s1,p] ^ parent[s2,p]));
-            }
-
-            string alice = "alice";
-            string bob = "bob";
-            string charlie = "charlie";
-            string duckie = "duckie";
-            w.Add(parent[alice, bob]);
-            w.Add(child[charlie, alice]);
-            w.Add(parent[duckie, alice]);
-
-            Assert.IsTrue(w.Query(gparent[duckie, bob]));
-            Assert.IsTrue(w.Query(sibling[bob, charlie]));
-
-            using(var x = new Variable<string>())
-            {
-                w.Query(gparent[duckie, x]);
-                Assert.IsTrue(x.Any((s) => s == bob));
-                Assert.IsTrue(x.Any((s) => s == charlie));
+                w.Query(freeborn[x,y]);
+                Assert.IsTrue(x.OfType<string>().Single().Equals("abraham"));
+                Assert.IsTrue(y.OfType<string>().Single().Equals("isaac"));
             }
 
         }

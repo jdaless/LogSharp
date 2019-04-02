@@ -29,15 +29,28 @@ namespace LogSharp
         /// in the rules with all possible values.
         /// </summary>
         public bool Query(IFact fact)
-        {
-            return fact.Evaluate(this);
+        {         
+            var satisfied = false;
+            foreach (var f in _state)
+            {
+                var result = f.Match(fact, this);
+                switch(result)
+                {
+                    case MatchResult.Contradicted:
+                        return false;
+                    case MatchResult.Satisfied:
+                        satisfied = true;
+                        break;
+                }
+            }
+            return satisfied;
         }
 
         internal bool ContainsFact(Fact f)
         {
             return _state
                 .OfType<Fact>()
-                .Any(fact => fact.TestEquality(f));
+                .Any(fact => fact.Equals(f));
         }
     }
 }

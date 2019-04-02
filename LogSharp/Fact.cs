@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace LogSharp
 {
@@ -8,27 +9,42 @@ namespace LogSharp
     {
         private readonly uint _parity;
         internal readonly object[] _args;
-        private readonly Rule _rule;
+        internal readonly Rule _functor;
         public Fact(Rule r, object[] args)
         {
             _args = args;
             _parity = (uint)args.Length;
-            _rule = r;
+            _functor = r;
         }
         public Fact()
         {
             _args = Array.Empty<object>();
             _parity = 0;
-            _rule = null;
+            _functor = null;
         }
 
-        public bool TestEquality(Fact f)
+        // override object.Equals
+        public override bool Equals(object obj)
         {
-            if (f._rule == null && this._rule == null)
+            //
+            // See the full list of guidelines at
+            //   http://go.microsoft.com/fwlink/?LinkID=85237
+            // and also the guidance for operator== at
+            //   http://go.microsoft.com/fwlink/?LinkId=85238
+            //
+            
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+            
+            var f = (Fact)obj;
+
+            if (f._functor == null && this._functor == null)
             {
                 return f == this;
             }
-            if (f._rule != this._rule || f._parity != this._parity)
+            if (f._functor != this._functor || f._parity != this._parity)
             {
                 return false;
             }
@@ -37,6 +53,13 @@ namespace LogSharp
                 if (!_args[i].Equals(f._args[i])) { return false; }
             }
             return true;
+        }
+        
+        // override object.GetHashCode
+        public override int GetHashCode()
+        {
+            // TODO: write your implementation of GetHashCode() here
+            throw new System.NotImplementedException();
         }
 
         bool IFact.Evaluate(World w)
@@ -51,6 +74,48 @@ namespace LogSharp
                 return w.Add(this);
             }
             return true;
+        }
+
+        MatchResult IFact.Match(IFact goal, World w)
+        {
+            // foreach(var arg in _args)
+            // {
+            //     if(arg is Variable)
+            //     {
+
+            //     }
+            //     else
+            //     {
+
+            //     }
+            // }
+            if(!(goal is Fact)) return MatchResult.Inconclusive;
+            var f = (Fact)goal;
+            if(!(f.IsCompatable(this))) return MatchResult.Inconclusive;
+            if(f._parity == 0)
+            {
+                return (f._functor == this._functor)?MatchResult.Satisfied:MatchResult.Inconclusive;
+            }
+            else if(f._parity == 1)
+            {
+                if(f._args[0] is Variable)
+                {
+                    if(this._args[0] is Variable) return MatchResult.Inconclusive;
+
+                    ((Variable)f._args[0]).values.Add(this._args[0]);
+                    return MatchResult.Satisfied;
+                }
+                else
+                {
+                    return f.Equals(this)?MatchResult.Satisfied: MatchResult.Inconclusive;
+                }
+            }
+            return MatchResult.Inconclusive;
+        }
+
+        private bool IsCompatable(Fact f)
+        {
+            return this._parity == f._parity && this._functor == f._functor;
         }
 
         /// <summary>

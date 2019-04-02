@@ -5,23 +5,24 @@ using System.Text;
 
 namespace LogSharp
 {
-    public class Variable<T> : IDisposable, IEnumerable<T>
+    public class Variable : IDisposable, IEnumerable
     {
-        public static Variable<Object> _ = new Variable<Object>();
+        public static Variable _ = new Variable();
+
+        internal IList values = new List<Object>();
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator GetEnumerator()
         {
-            throw new NotImplementedException();
+            return values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return values.GetEnumerator();
         }
     }
 }
