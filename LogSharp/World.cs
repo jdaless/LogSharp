@@ -15,12 +15,9 @@ namespace LogSharp
         /// </summary>
         public bool Add(IFact r)
         {
-            foreach (IFact f in _state){
-                // check to see if r contradicts f
-                // return false if so
-            }
+            if(this.Query(r)) return false;
             _state.Add(r);
-             return true;
+            return true;
         }
 
         /// <summary>
@@ -28,16 +25,16 @@ namespace LogSharp
         /// without adding it to the state of the world. Will set values of variables
         /// in the rules with all possible values.
         /// </summary>
-        public bool Query(IFact fact)
+        public bool Query(IFact goal)
         {         
             var satisfied = false;
             foreach (var f in _state)
             {
-                var result = f.Match(fact, this);
+                var result = f.Match(goal, this);
                 switch(result)
                 {
                     case MatchResult.Contradicted:
-                        return false;
+                        return true;
                     case MatchResult.Satisfied:
                         satisfied = true;
                         break;

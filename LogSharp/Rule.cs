@@ -88,18 +88,29 @@ namespace LogSharp
                 _left = a;
                 _right = b;
             }
-            bool IFact.Evaluate(World w)
-            {
-                return _left.Evaluate(w) & _right.Evaluate(w);
-            }
-            bool IFact.Coerce(World w)
-            {
-                return _left.Coerce(w) & _right.Coerce(w);
-            }
 
-            public MatchResult Match(IFact goal, World w)
+            public new MatchResult Match(IFact goal, World w)
             {
-                throw new NotImplementedException();
+                var sat = MatchResult.Inconclusive;
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
+                switch(l)
+                {
+                    case MatchResult.Contradicted:
+                        return l;
+                    case MatchResult.Satisfied:
+                        sat = l;
+                        break;
+                }
+                switch(r)
+                {
+                    case MatchResult.Contradicted:
+                        return r;
+                    case MatchResult.Satisfied:
+                        if(sat == r) return r;
+                        break;
+                }
+                return sat;
             }
         }
 
@@ -113,19 +124,28 @@ namespace LogSharp
                 _right = b;
             }
 
-            public bool Coerce(World w)
+            public new MatchResult Match(IFact goal, World w)
             {
-                throw new NotImplementedException();
-            }
-
-            public MatchResult Match(IFact goal, World w)
-            {
-                throw new NotImplementedException();
-            }
-
-            bool IFact.Evaluate(World w)
-            {
-                return _left.Evaluate(w) | _right.Evaluate(w);
+                var con = MatchResult.Inconclusive;
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
+                switch(l)
+                {
+                    case MatchResult.Satisfied:
+                        return l;
+                    case MatchResult.Contradicted:
+                        con = l;
+                        break;
+                }
+                switch(r)
+                {
+                    case MatchResult.Satisfied:
+                        return r;
+                    case MatchResult.Contradicted:
+                        if(con == r) return r;
+                        break;
+                }
+                return con;
             }
         }
 
@@ -138,26 +158,31 @@ namespace LogSharp
                 _left = a;
                 _right = b;
             }
-            bool IFact.Evaluate(World w)
-            {
-                return (!_left.Evaluate(w)) | _right.Evaluate(w);
-            }
-            bool IFact.Coerce(World w)
-            {
-                if(_left.Evaluate(w))
-                {
-                    return _right.Coerce(w);
-                }
-                if(!_right.Evaluate(w))
-                {
-                    return ((IFact) new NegatedRule(_left)).Coerce(w);
-                }
-                return true;
-            }
 
-            public MatchResult Match(IFact goal, World w)
+            public new MatchResult Match(IFact goal, World w)
             {
-                throw new NotImplementedException();
+                var imp = MatchResult.Inconclusive;
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
+                switch(l)
+                {
+                    // a false implicator means the implication is always true
+                    case MatchResult.Contradicted:
+                        return MatchResult.Satisfied;
+                    case MatchResult.Satisfied:
+                        imp = l;
+                        break;
+                }
+                switch(r)
+                {
+                    // a true implicans means the implication is always true
+                    case MatchResult.Satisfied:
+                        return r;
+                    case MatchResult.Contradicted:
+                        if(imp == MatchResult.Satisfied) return r;
+                        break;
+                }
+                return imp;
             }
         }
 
@@ -168,18 +193,12 @@ namespace LogSharp
             {
                 _left = a;
             }
-            bool IFact.Evaluate(World w)
-            {
-                return !_left.Evaluate(w);
-            }
-            bool IFact.Coerce(World w)
-            {
-                return !_left.Evaluate(w);
-            }
 
-            public MatchResult Match(IFact goal, World w)
+            public new MatchResult Match(IFact goal, World w)
             {
-                throw new NotImplementedException();
+                return _left.Match(goal, w)==MatchResult.Satisfied?
+                            MatchResult.Contradicted:
+                            MatchResult.Satisfied;
             }
         }
     }

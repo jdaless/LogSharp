@@ -7,20 +7,23 @@ namespace LogSharp
 {
     public class Fact : IFact
     {
-        private readonly uint _parity;
+        private readonly uint _arity;
         internal readonly object[] _args;
         internal readonly Rule _functor;
+        private readonly Guid _id;
         public Fact(Rule r, object[] args)
         {
             _args = args;
-            _parity = (uint)args.Length;
+            _arity = (uint)args.Length;
             _functor = r;
+            _id = Guid.NewGuid();
         }
         public Fact()
         {
             _args = Array.Empty<object>();
-            _parity = 0;
+            _arity = 0;
             _functor = null;
+            _id = Guid.NewGuid();
         }
 
         // override object.Equals
@@ -42,13 +45,13 @@ namespace LogSharp
 
             if (f._functor == null && this._functor == null)
             {
-                return f == this;
+                return f._id == this._id;
             }
-            if (f._functor != this._functor || f._parity != this._parity)
+            if (f._functor != this._functor || f._arity != this._arity)
             {
                 return false;
             }
-            for(int i=0; i<_parity; i++)
+            for(int i=0; i<_arity; i++)
             {
                 if (!_args[i].Equals(f._args[i])) { return false; }
             }
@@ -62,41 +65,17 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        bool IFact.Evaluate(World w)
-        {
-            return w.ContainsFact(this);
-        }
-
-        bool IFact.Coerce(World w)
-        {
-            if(!w.ContainsFact(this))
-            {
-                return w.Add(this);
-            }
-            return true;
-        }
-
         MatchResult IFact.Match(IFact goal, World w)
         {
-            // foreach(var arg in _args)
-            // {
-            //     if(arg is Variable)
-            //     {
+            if(!(goal is Fact)) return goal.Match(this, w);
 
-            //     }
-            //     else
-            //     {
-
-            //     }
-            // }
-            if(!(goal is Fact)) return MatchResult.Inconclusive;
             var f = (Fact)goal;
             if(!(f.IsCompatable(this))) return MatchResult.Inconclusive;
-            if(f._parity == 0)
+            if(f._arity == 0)
             {
-                return (f._functor == this._functor)?MatchResult.Satisfied:MatchResult.Inconclusive;
+                return (f._id == this._id)?MatchResult.Satisfied:MatchResult.Inconclusive;
             }
-            else if(f._parity == 1)
+            else if(f._arity == 1)
             {
                 if(f._args[0] is Variable)
                 {
@@ -115,7 +94,7 @@ namespace LogSharp
 
         private bool IsCompatable(Fact f)
         {
-            return this._parity == f._parity && this._functor == f._functor;
+            return this._arity == f._arity && this._functor == f._functor;
         }
 
         /// <summary>

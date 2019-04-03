@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using LogSharp;
 using System.Linq;
+using System;
 
 namespace UnitTests
 {
@@ -29,6 +30,7 @@ namespace UnitTests
             Fact somethingFalse = new Fact();
             Assert.IsTrue(w.Query(somethingTrue));
             Assert.IsFalse(w.Query(~somethingTrue));
+            Assert.IsTrue(w.Query(~~somethingTrue));
             Assert.IsFalse(w.Query(somethingFalse));
             Assert.IsTrue(w.Query(~somethingFalse));
             Assert.IsTrue(w.Query(somethingTrue | somethingFalse));
