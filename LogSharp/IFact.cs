@@ -6,7 +6,7 @@ namespace LogSharp
 {
     public interface IFact
     {
-        MatchResult Match(IFact goal);
+        MatchResult Match(IFact goal, World w);
         bool VariablesSatisfied();
     }
 

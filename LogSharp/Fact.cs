@@ -61,9 +61,9 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        MatchResult IFact.Match(IFact goal)
+        MatchResult IFact.Match(IFact goal, World w)
         {
-            if(!(goal is Fact)) return goal.Match(this);
+            if(!(goal is Fact)) return goal.Match(this, w);
 
             var f = (Fact)goal;
             if(!(f.IsCompatable(this))) return MatchResult.WeaklyContradicted;

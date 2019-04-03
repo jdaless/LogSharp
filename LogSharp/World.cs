@@ -52,7 +52,7 @@ namespace LogSharp
                     + " to "
                     + f.GetType().Name
                     + ": ");
-                var result = f.Match(goal);
+                var result = f.Match(goal, this);
                 Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;

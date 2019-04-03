@@ -40,7 +40,7 @@ namespace LogSharp
             return (r1 > r2) ^ (r1 < r2);
         }
 
-        MatchResult IFact.Match(IFact goal)
+        MatchResult IFact.Match(IFact goal, World w)
         {
             throw new NotImplementedException();
         }
@@ -85,11 +85,11 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var sat = MatchResult.WeaklyContradicted;
-                var l = _left.Match(goal);
-                var r = _right.Match(goal);
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
                 switch(l)
                 {
                     case MatchResult.Contradicted:
@@ -125,11 +125,11 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var con = MatchResult.WeaklyContradicted;
-                var l = _left.Match(goal);
-                var r = _right.Match(goal);
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
                 switch(l)
                 {
                     case MatchResult.Satisfied:
@@ -165,11 +165,11 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var imp = MatchResult.WeaklyContradicted;
-                var l = _left.Match(goal);
-                var r = _right.Match(goal);
+                var l = _left.Match(goal, w);
+                var r = _right.Match(goal, w);
                 Console.WriteLine(l + " => " + r);
                 if(l == MatchResult.Contradicted)
                     return MatchResult.Satisfied;
@@ -195,9 +195,9 @@ namespace LogSharp
                 _left = a;
             }
 
-            MatchResult IFact.Match(IFact goal)
+            MatchResult IFact.Match(IFact goal, World w)
             {
-                var match = _left.Match(goal);
+                var match = _left.Match(goal, w);
                 MatchResult res = MatchResult.WeaklyContradicted;
                 switch(match)
                 {

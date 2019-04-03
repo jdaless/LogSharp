@@ -187,6 +187,11 @@ namespace UnitTests
                 w.Add(man[x] > mortal[x]);
             }
             w.Add(man["socrates"]);
+            using (var x = new Variable())
+            {
+                Assert.IsTrue(w.Query(mortal[x]));
+                Assert.IsTrue(x.OfType<string>().First() == "socrates");
+            }
             Assert.IsTrue(w.Query(mortal["socrates"]));
         }
 
