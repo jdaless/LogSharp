@@ -42,9 +42,10 @@ namespace UnitTests
             Assert.IsFalse(w.Query(somethingFalse));
 
             Assert.IsFalse(w.Query(!somethingTrue));
+            Assert.IsTrue(w.Query(!!somethingTrue));
+
             Assert.IsTrue(w.Query(!somethingFalse));
 
-            Assert.IsTrue(w.Query(!!somethingTrue));
         }
 
         [TestMethod]

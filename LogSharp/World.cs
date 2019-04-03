@@ -11,7 +11,7 @@ namespace LogSharp
 
         public World()
         {
-            // this.Add(new Rule()["red"]);
+            this.Add(new Rule()["red"]);
             // using(var x = new Variable())
             // {
             //     this.Add(Rule.Equality[x, x]);
@@ -25,7 +25,7 @@ namespace LogSharp
         /// </summary>
         public bool Add(IFact r)
         {
-            if(this.NonContradict(r) == MatchResult.Contradicted) 
+            if (this.NonContradict(r) == MatchResult.Contradicted)
                 return false;
             _state.Add(r);
             return true;
@@ -37,28 +37,38 @@ namespace LogSharp
         /// in the rules with all possible values.
         /// </summary>
         public bool Query(IFact goal)
-        {        
-
-            return this.NonContradict(goal) == MatchResult.Satisfied;
+        {
+            return this.NonContradict(goal).HasFlag(MatchResult.Satisfied);
         }
 
         private MatchResult NonContradict(IFact goal)
         {
-            var satisfied = false;
+            var sat = false;
+            Console.WriteLine("\n_state: " + _state.Count());
+            MatchResult res = MatchResult.WeaklyContradicted;
             foreach (var f in _state)
             {
-                var result = f.Match(goal, this);
-                switch(result)
-                {
-                    case MatchResult.Contradicted:
-                        return MatchResult.Contradicted;
-                    case MatchResult.Satisfied:
-                        satisfied = true;
-                        break;
-                }
+                Console.WriteLine(goal.GetType().Name
+                    + " to "
+                    + f.GetType().Name
+                    + ": ");
+                var result = f.Match(goal);
+                Console.WriteLine(result);
+                if (!result.HasFlag(MatchResult.Weak))
+                    res = result;
+                else if (result.HasFlag(MatchResult.Satisfied))
+                    sat = true;
+
             }
-            
-            return (satisfied)?MatchResult.Satisfied:MatchResult.Inconclusive;
+
+            if (res.HasFlag(MatchResult.Weak))
+            {
+                res = sat ?
+                    MatchResult.WeaklySatisfied :
+                    MatchResult.WeaklyContradicted;
+            }
+            Console.WriteLine("Result: " + res);
+            return res;
         }
 
         internal bool ContainsFact(Fact f)

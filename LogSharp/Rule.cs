@@ -21,6 +21,7 @@ namespace LogSharp
         public static Rule operator >(Rule r1, IFact r2)
         {
             return new ImpliedRule(r1,r2);
+            //return (~r1) | r2;
         }
         /// <summary>
         /// Left implication, the rule is satisfied if the left argument 
@@ -39,7 +40,7 @@ namespace LogSharp
             return (r1 > r2) ^ (r1 < r2);
         }
 
-        MatchResult IFact.Match(IFact goal, World w)
+        MatchResult IFact.Match(IFact goal)
         {
             throw new NotImplementedException();
         }
@@ -84,11 +85,11 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal)
             {
-                var sat = MatchResult.Inconclusive;
-                var l = _left.Match(goal, w);
-                var r = _right.Match(goal, w);
+                var sat = MatchResult.WeaklyContradicted;
+                var l = _left.Match(goal);
+                var r = _right.Match(goal);
                 switch(l)
                 {
                     case MatchResult.Contradicted:
@@ -105,7 +106,7 @@ namespace LogSharp
                         if(sat == r) return r;
                         break;
                 }
-                return MatchResult.Inconclusive;
+                return MatchResult.WeaklyContradicted;
             }
             
             bool IFact.VariablesSatisfied()
@@ -124,11 +125,11 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal)
             {
-                var con = MatchResult.Inconclusive;
-                var l = _left.Match(goal, w);
-                var r = _right.Match(goal, w);
+                var con = MatchResult.WeaklyContradicted;
+                var l = _left.Match(goal);
+                var r = _right.Match(goal);
                 switch(l)
                 {
                     case MatchResult.Satisfied:
@@ -164,29 +165,20 @@ namespace LogSharp
                 _right = b;
             }
 
-            MatchResult IFact.Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal)
             {
-                var imp = MatchResult.Inconclusive;
-                var l = _left.Match(goal, w);
-                var r = _right.Match(goal, w);
-                switch(l)
-                {
-                    // a false implicator means the implication is always true
-                    case MatchResult.Contradicted:
-                        return MatchResult.Satisfied;
-                    case MatchResult.Inconclusive:
-                        return MatchResult.Satisfied;
-                }
-                switch(r)
-                {
-                    // a true implicans means the implication is always true
-                    case MatchResult.Satisfied:
-                        return r;
-                    case MatchResult.Contradicted:
-                        if(l == MatchResult.Satisfied) return r;
-                        break;
-                }
-                return MatchResult.Inconclusive;
+                var imp = MatchResult.WeaklyContradicted;
+                var l = _left.Match(goal);
+                var r = _right.Match(goal);
+                Console.WriteLine(l + " => " + r);
+                if(l == MatchResult.Contradicted)
+                    return MatchResult.Satisfied;
+                else if(r == MatchResult.Satisfied)
+                    return MatchResult.Satisfied;
+                else if(l == MatchResult.Satisfied && r == MatchResult.Contradicted)
+                    return MatchResult.Contradicted;
+
+                return MatchResult.WeaklyContradicted;
             }
 
             bool IFact.VariablesSatisfied()
@@ -203,11 +195,26 @@ namespace LogSharp
                 _left = a;
             }
 
-            MatchResult IFact.Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal)
             {
-                return _left.Match(goal, w)==MatchResult.Satisfied?
-                            MatchResult.Contradicted:
-                            MatchResult.Satisfied;
+                var match = _left.Match(goal);
+                MatchResult res = MatchResult.WeaklyContradicted;
+                switch(match)
+                {
+                    case MatchResult.Satisfied:
+                        res = MatchResult.Contradicted;
+                        break;
+                    case MatchResult.Contradicted:
+                        res = MatchResult.Satisfied;
+                        break;
+                    case MatchResult.WeaklyContradicted:
+                        res = MatchResult.WeaklySatisfied;
+                        break;
+                    case MatchResult.WeaklySatisfied:
+                        res = MatchResult.WeaklyContradicted;
+                        break;
+                }
+                return res;
             }
 
             bool IFact.VariablesSatisfied()

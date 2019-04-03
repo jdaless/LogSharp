@@ -18,7 +18,7 @@ namespace LogSharp
             _arity = (uint)args.Length;
             _functor = r;
             _id = Guid.NewGuid();
-            _satisfied = Enumerable.Repeat(MatchResult.Inconclusive, (int)_arity).ToArray();
+            _satisfied = Enumerable.Repeat(MatchResult.WeaklyContradicted, (int)_arity).ToArray();
         }
         public Fact()
         {
@@ -61,22 +61,24 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        MatchResult IFact.Match(IFact goal, World w)
+        MatchResult IFact.Match(IFact goal)
         {
-            if(!(goal is Fact)) return goal.Match(this, w);
+            if(!(goal is Fact)) return goal.Match(this);
 
             var f = (Fact)goal;
-            if(!(f.IsCompatable(this))) return MatchResult.Inconclusive;
+            if(!(f.IsCompatable(this))) return MatchResult.WeaklyContradicted;
             if(f._arity == 0)
             {
-                return (f._id == this._id)?MatchResult.Satisfied:MatchResult.Inconclusive;
+                return (f._id == this._id)?
+                    MatchResult.Satisfied:
+                    MatchResult.WeaklyContradicted;
             }
             for(var i=0; i< _arity; i++)
             {
                 if(f._args[i] is Variable)
                 {
                     if(_args[i] is Variable) 
-                        _satisfied[i] = MatchResult.Inconclusive;
+                        _satisfied[i] = MatchResult.WeaklyContradicted;
                     else{
                         ((Variable)f._args[i]).values.Add(_args[i]);
                         _satisfied[i] = MatchResult.Satisfied;
@@ -84,10 +86,14 @@ namespace LogSharp
                 }
                 else
                 {
-                    _satisfied[i] = f._args[i].Equals(_args[i])?MatchResult.Satisfied: MatchResult.Inconclusive;
+                    _satisfied[i] = f._args[i].Equals(_args[i])?
+                        MatchResult.Satisfied: 
+                        MatchResult.WeaklyContradicted;
                 }
             }
-            return ((IFact)this).VariablesSatisfied()?MatchResult.Satisfied:MatchResult.Inconclusive;
+            return ((IFact)this).VariablesSatisfied()?
+                MatchResult.Satisfied:
+                MatchResult.WeaklyContradicted;
         }
 
         bool IFact.VariablesSatisfied()
