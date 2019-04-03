@@ -110,7 +110,7 @@ namespace LogSharp
                         if(sat == r) return r;
                         break;
                 }
-                return sat;
+                return MatchResult.Inconclusive;
             }
         }
 
@@ -182,7 +182,7 @@ namespace LogSharp
                         if(imp == MatchResult.Satisfied) return r;
                         break;
                 }
-                return imp;
+                return MatchResult.Inconclusive;
             }
         }
 
@@ -199,6 +199,21 @@ namespace LogSharp
                 return _left.Match(goal, w)==MatchResult.Satisfied?
                             MatchResult.Contradicted:
                             MatchResult.Satisfied;
+            }
+        }
+
+        internal class CustomRule : Rule, IFact
+        {
+            private IFact _left;
+            private Func<IFact, World, MatchResult> _match;
+            public CustomRule(Func<IFact, World, MatchResult> match)
+            {
+                _match = match;
+            }
+
+            public new MatchResult Match(IFact goal, World w)
+            {
+                return _match.Invoke(goal, w);
             }
         }
     }

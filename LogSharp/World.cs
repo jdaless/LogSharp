@@ -34,7 +34,7 @@ namespace LogSharp
                 switch(result)
                 {
                     case MatchResult.Contradicted:
-                        return true;
+                        return false;
                     case MatchResult.Satisfied:
                         satisfied = true;
                         break;

@@ -28,6 +28,9 @@ namespace UnitTests
 
             // Create a fact that is not added to the world
             Fact somethingFalse = new Fact();
+            // Console.WriteLine(w.Query(somethingTrue));
+            // Console.WriteLine(w.Query(~somethingTrue));
+            // Console.WriteLine(w.Query(~~somethingTrue));
             Assert.IsTrue(w.Query(somethingTrue));
             Assert.IsFalse(w.Query(~somethingTrue));
             Assert.IsTrue(w.Query(~~somethingTrue));
@@ -36,6 +39,8 @@ namespace UnitTests
             Assert.IsTrue(w.Query(somethingTrue | somethingFalse));
             Assert.IsFalse(w.Query(somethingTrue & somethingFalse));
             Assert.IsTrue(w.Query(somethingTrue & somethingTrue));
+            Assert.IsTrue(w.Query(somethingTrue > somethingTrue));
+            Assert.IsFalse(w.Query(somethingTrue > somethingFalse));
         }
 
         [TestMethod]
