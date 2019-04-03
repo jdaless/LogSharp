@@ -16,6 +16,15 @@ namespace UnitTests
             w.Add(p);
             Assert.IsTrue(w.Query(p));
         }
+        
+        [TestMethod]
+        public void Contradiction()
+        {
+            World w = new World();
+            Fact p = new Fact();
+            Assert.IsTrue(w.Add(p));
+            Assert.IsFalse(w.Add(~p));
+        }
 
         [TestMethod]
         public void RuleConstruction()

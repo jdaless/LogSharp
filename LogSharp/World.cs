@@ -15,7 +15,8 @@ namespace LogSharp
         /// </summary>
         public bool Add(IFact r)
         {
-            if(this.Query(r)) return false;
+            if(this.NonContradict(r) == MatchResult.Contradicted) 
+                return false;
             _state.Add(r);
             return true;
         }
@@ -26,7 +27,12 @@ namespace LogSharp
         /// in the rules with all possible values.
         /// </summary>
         public bool Query(IFact goal)
-        {         
+        {        
+            return this.NonContradict(goal) == MatchResult.Satisfied;
+        }
+
+        private MatchResult NonContradict(IFact goal)
+        {
             var satisfied = false;
             foreach (var f in _state)
             {
@@ -34,13 +40,13 @@ namespace LogSharp
                 switch(result)
                 {
                     case MatchResult.Contradicted:
-                        return false;
+                        return MatchResult.Contradicted;
                     case MatchResult.Satisfied:
                         satisfied = true;
                         break;
                 }
             }
-            return satisfied;
+            return satisfied?MatchResult.Satisfied:MatchResult.Inconclusive;
         }
 
         internal bool ContainsFact(Fact f)
