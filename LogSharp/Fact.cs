@@ -9,6 +9,7 @@ namespace LogSharp
     {
         private readonly uint _arity;
         internal readonly object[] _args;
+        private readonly MatchResult[] _satisfied;
         internal readonly Rule _functor;
         private readonly Guid _id;
         public Fact(Rule r, object[] args)
@@ -17,6 +18,7 @@ namespace LogSharp
             _arity = (uint)args.Length;
             _functor = r;
             _id = Guid.NewGuid();
+            _satisfied = Enumerable.Repeat(MatchResult.Inconclusive, (int)_arity).ToArray();
         }
         public Fact()
         {
@@ -24,6 +26,7 @@ namespace LogSharp
             _arity = 0;
             _functor = null;
             _id = Guid.NewGuid();
+            _satisfied = new MatchResult[0];
         }
 
         // override object.Equals
@@ -68,21 +71,28 @@ namespace LogSharp
             {
                 return (f._id == this._id)?MatchResult.Satisfied:MatchResult.Inconclusive;
             }
-            else if(f._arity == 1)
+            for(var i=0; i< _arity; i++)
             {
-                if(f._args[0] is Variable)
+                if(f._args[i] is Variable)
                 {
-                    if(this._args[0] is Variable) return MatchResult.Inconclusive;
-
-                    ((Variable)f._args[0]).values.Add(this._args[0]);
-                    return MatchResult.Satisfied;
+                    if(_args[i] is Variable) 
+                        _satisfied[i] = MatchResult.Inconclusive;
+                    else{
+                        ((Variable)f._args[i]).values.Add(_args[i]);
+                        _satisfied[i] = MatchResult.Satisfied;
+                    }
                 }
                 else
                 {
-                    return f.Equals(this)?MatchResult.Satisfied: MatchResult.Inconclusive;
+                    _satisfied[i] = f._args[i].Equals(_args[i])?MatchResult.Satisfied: MatchResult.Inconclusive;
                 }
             }
-            return MatchResult.Contradicted;
+            return ((IFact)this).VariablesSatisfied()?MatchResult.Satisfied:MatchResult.Inconclusive;
+        }
+
+        bool IFact.VariablesSatisfied()
+        {
+            return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
 
         private bool IsCompatable(Fact f)

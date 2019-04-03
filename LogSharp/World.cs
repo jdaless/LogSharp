@@ -8,6 +8,16 @@ namespace LogSharp
     {
         private readonly IList<IFact> _state = new List<IFact>();
 
+
+        public World()
+        {
+            // this.Add(new Rule()["red"]);
+            // using(var x = new Variable())
+            // {
+            //     this.Add(Rule.Equality[x, x]);
+            // }
+        }
+
         /// <summary>
         /// Adds a new rule to the state of the world. Returns true on success,
         /// returns false and fails to add the rule if the new rule would 
@@ -28,6 +38,7 @@ namespace LogSharp
         /// </summary>
         public bool Query(IFact goal)
         {        
+
             return this.NonContradict(goal) == MatchResult.Satisfied;
         }
 
@@ -46,7 +57,8 @@ namespace LogSharp
                         break;
                 }
             }
-            return satisfied?MatchResult.Satisfied:MatchResult.Inconclusive;
+            
+            return (satisfied)?MatchResult.Satisfied:MatchResult.Inconclusive;
         }
 
         internal bool ContainsFact(Fact f)

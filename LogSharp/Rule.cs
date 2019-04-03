@@ -4,7 +4,7 @@ namespace LogSharp
 {
     public class Rule : IFact
     {
-        public static Rule Equality;
+        public static Rule Equality = new Rule();
 
         public Fact this[params object[] args]
         {
@@ -39,17 +39,12 @@ namespace LogSharp
             return (r1 > r2) ^ (r1 < r2);
         }
 
-        public bool Evaluate(World w)
+        MatchResult IFact.Match(IFact goal, World w)
         {
             throw new NotImplementedException();
         }
 
-        public bool Coerce(World w)
-        {
-            throw new NotImplementedException();
-        }
-
-        public MatchResult Match(IFact goal, World w)
+        bool IFact.VariablesSatisfied()
         {
             throw new NotImplementedException();
         }
@@ -89,7 +84,7 @@ namespace LogSharp
                 _right = b;
             }
 
-            public new MatchResult Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var sat = MatchResult.Inconclusive;
                 var l = _left.Match(goal, w);
@@ -112,6 +107,11 @@ namespace LogSharp
                 }
                 return MatchResult.Inconclusive;
             }
+            
+            bool IFact.VariablesSatisfied()
+            {
+                return _left.VariablesSatisfied() && _right.VariablesSatisfied();
+            }
         }
 
         internal class DisjoinedRule : Rule, IFact
@@ -124,7 +124,7 @@ namespace LogSharp
                 _right = b;
             }
 
-            public new MatchResult Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var con = MatchResult.Inconclusive;
                 var l = _left.Match(goal, w);
@@ -147,6 +147,11 @@ namespace LogSharp
                 }
                 return con;
             }
+            
+            bool IFact.VariablesSatisfied()
+            {
+                return _left.VariablesSatisfied() && _right.VariablesSatisfied();
+            }
         }
 
         internal class ImpliedRule : Rule, IFact
@@ -159,7 +164,7 @@ namespace LogSharp
                 _right = b;
             }
 
-            public new MatchResult Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 var imp = MatchResult.Inconclusive;
                 var l = _left.Match(goal, w);
@@ -169,9 +174,8 @@ namespace LogSharp
                     // a false implicator means the implication is always true
                     case MatchResult.Contradicted:
                         return MatchResult.Satisfied;
-                    case MatchResult.Satisfied:
-                        imp = l;
-                        break;
+                    case MatchResult.Inconclusive:
+                        return MatchResult.Satisfied;
                 }
                 switch(r)
                 {
@@ -179,10 +183,15 @@ namespace LogSharp
                     case MatchResult.Satisfied:
                         return r;
                     case MatchResult.Contradicted:
-                        if(imp == MatchResult.Satisfied) return r;
+                        if(l == MatchResult.Satisfied) return r;
                         break;
                 }
                 return MatchResult.Inconclusive;
+            }
+
+            bool IFact.VariablesSatisfied()
+            {
+                return _left.VariablesSatisfied() && _right.VariablesSatisfied();
             }
         }
 
@@ -194,27 +203,38 @@ namespace LogSharp
                 _left = a;
             }
 
-            public new MatchResult Match(IFact goal, World w)
+            MatchResult IFact.Match(IFact goal, World w)
             {
                 return _left.Match(goal, w)==MatchResult.Satisfied?
                             MatchResult.Contradicted:
                             MatchResult.Satisfied;
             }
-        }
 
-        internal class CustomRule : Rule, IFact
-        {
-            private IFact _left;
-            private Func<IFact, World, MatchResult> _match;
-            public CustomRule(Func<IFact, World, MatchResult> match)
+            bool IFact.VariablesSatisfied()
             {
-                _match = match;
-            }
-
-            public new MatchResult Match(IFact goal, World w)
-            {
-                return _match.Invoke(goal, w);
+                return _left.VariablesSatisfied();
             }
         }
+
+        // internal class CustomRule : Rule, IFact
+        // {
+        //     private Func<IFact, World, MatchResult> _match;
+        //     public new Fact this[params object[] args]
+        //     {
+        //         get
+        //         {
+        //             return 
+        //         }
+        //     }
+        //     public CustomRule(Func<IFact, World, MatchResult> match)
+        //     {
+        //         _match = match;
+        //     }
+
+        //     MatchResult IFact.Match(IFact goal, World w)
+        //     {
+        //         return _match.Invoke(goal, w);
+        //     }
+        // }
     }
 }

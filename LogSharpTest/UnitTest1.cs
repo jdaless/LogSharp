@@ -27,7 +27,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void RuleConstruction()
+        public void Negation()
         {
             World w = new World();
 
@@ -37,23 +37,72 @@ namespace UnitTests
 
             // Create a fact that is not added to the world
             Fact somethingFalse = new Fact();
-            // Console.WriteLine(w.Query(somethingTrue));
-            // Console.WriteLine(w.Query(~somethingTrue));
-            // Console.WriteLine(w.Query(~~somethingTrue));
+
             Assert.IsTrue(w.Query(somethingTrue));
-            Assert.IsFalse(w.Query(~somethingTrue));
-            Assert.IsTrue(w.Query(~~somethingTrue));
             Assert.IsFalse(w.Query(somethingFalse));
-            Assert.IsTrue(w.Query(~somethingFalse));
-            Assert.IsTrue(w.Query(somethingTrue | somethingFalse));
-            Assert.IsFalse(w.Query(somethingTrue & somethingFalse));
+
+            Assert.IsFalse(w.Query(!somethingTrue));
+            Assert.IsTrue(w.Query(!somethingFalse));
+
+            Assert.IsTrue(w.Query(!!somethingTrue));
+        }
+
+        [TestMethod]
+        public void Conjunction()
+        {
+            World w = new World();
+
+            // Create a fact that is added to the world
+            Fact somethingTrue = new Fact();
+            w.Add(somethingTrue);
+
+            // Create a fact that is not added to the world
+            Fact somethingFalse = new Fact();
+
             Assert.IsTrue(w.Query(somethingTrue & somethingTrue));
-            Assert.IsTrue(w.Query(somethingTrue > somethingTrue));
-            Assert.IsFalse(w.Query(somethingTrue > somethingFalse));
+            Assert.IsFalse(w.Query(somethingTrue & somethingFalse));
+            Assert.IsFalse(w.Query(somethingFalse & somethingTrue));
+            Assert.IsFalse(w.Query(somethingFalse & somethingFalse));
+        }
+
+        [TestMethod]
+        public void Disjunction()
+        {
+            World w = new World();
+
+            // Create a fact that is added to the world
+            Fact somethingTrue = new Fact();
+            w.Add(somethingTrue);
+
+            // Create a fact that is not added to the world
+            Fact somethingFalse = new Fact();
+
+            Assert.IsTrue(w.Query(somethingTrue | somethingTrue));
+            Assert.IsTrue(w.Query(somethingTrue | somethingFalse));
+            Assert.IsTrue(w.Query(somethingFalse | somethingTrue));
+            Assert.IsFalse(w.Query(somethingFalse | somethingFalse));
         }
 
         [TestMethod]
         public void Implication()
+        {
+            World w = new World();
+
+            // Create a fact that is added to the world
+            Fact somethingTrue = new Fact();
+            w.Add(somethingTrue);
+
+            // Create a fact that is not added to the world
+            Fact somethingFalse = new Fact();
+
+            Assert.IsTrue(w.Query(somethingTrue > somethingTrue));
+            Assert.IsFalse(w.Query(somethingTrue > somethingFalse));
+            Assert.IsTrue(w.Query(somethingFalse > somethingTrue));
+            Assert.IsTrue(w.Query(somethingFalse > somethingFalse));
+        }
+
+        [TestMethod]
+        public void ModusPonens()
         {
             World w = new World();
 
@@ -62,6 +111,9 @@ namespace UnitTests
 
             Fact implicans = new Fact();
             w.Add(somethingTrue > implicans);
+
+            // implicans was not added to the world, but is
+            // a consequence of the rules in the world.
             Assert.IsTrue(w.Query(implicans));
         }
 
@@ -83,6 +135,18 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void BuiltInPredicates()
+        {
+            World w = new World();
+            Assert.IsTrue(w.Query(Rule.Equality[1, 1]));
+            using (var x = new Variable())
+            {
+                w.Query(Rule.Equality[x, 5]);
+                Assert.AreEqual(x.OfType<int>().First(), 5);
+            }
+        }
+
+        [TestMethod]
         public void Relationships()
         {
             World w = new World();
@@ -97,7 +161,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        public void Variables(){
+        public void VariableBinding(){
             World w = new World();
             Rule red = new Rule();
             w.Add(red["car"]);
@@ -123,21 +187,6 @@ namespace UnitTests
             }
             w.Add(man["socrates"]);
             Assert.IsTrue(w.Query(mortal["socrates"]));
-        }
-
-        [TestMethod]
-        public void Binding()
-        {
-            World w = new World();
-            Rule red = new Rule();
-            w.Add(red["car"]);
-            w.Add(red["fire truck"]);
-
-            // Setting variable
-            var m = new Variable();
-            w.Query(red[m]);
-            Assert.IsTrue(m.OfType<string>().Any((s) => s.Equals("car")));
-            Assert.IsTrue(m.OfType<string>().Any((s) => s.Equals("fire truck")));
         }
 
         [TestMethod]
