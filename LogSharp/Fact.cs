@@ -116,6 +116,7 @@ namespace LogSharp
         public static Rule operator >(Fact r1, IFact r2)
         {
             return new Rule.ImpliedRule(r1,r2);
+            //return (~r1) | r2;
         }
         /// <summary>
         /// Left implication, the rule is satisfied if the left argument 

@@ -119,6 +119,44 @@ namespace UnitTests
         }
 
         [TestMethod]
+        public void ModusTollens()
+        {
+            World w = new World();
+
+            Fact implicator = new Fact();
+
+            Fact somethingFalse = new Fact();
+
+            w.Add(implicator > somethingFalse);
+
+            // somethingFalse was not added to the world, so
+            // we know that implicator is not true
+            Assert.IsFalse(w.Query(implicator));
+            Assert.IsTrue(w.Query(~implicator));
+        }
+
+        [TestMethod]
+        public void ComplexModusPonens()
+        {
+            World w = new World();
+
+            Fact p = new Fact();
+            w.Add(p);
+            Fact q = new Fact();
+            w.Add(q);
+            Fact r = new Fact();
+            w.Add(r);
+
+            Fact implicans = new Fact();
+            w.Add(implicans < (p ^ q ^ r));
+
+            // implicans was not added to the world, but is
+            // a consequence of the rules in the world.
+            Assert.IsTrue(w.Query(implicans));
+
+        }
+
+        [TestMethod]
         public void Predicates()
         {
             World w = new World();

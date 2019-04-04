@@ -21,7 +21,7 @@ namespace LogSharp
         public static Rule operator >(Rule r1, IFact r2)
         {
             return new ImpliedRule(r1,r2);
-            //return (~r1) | r2;
+            //return (!r1) | r2;
         }
         /// <summary>
         /// Left implication, the rule is satisfied if the left argument 
@@ -35,9 +35,9 @@ namespace LogSharp
             return new ImpliedRule(r2,r1);
         }
 
-        public static Rule DoubleImply(Rule r1, IFact r2)
+        public static Rule IFF(Rule r1, IFact r2)
         {
-            return (r1 > r2) ^ (r1 < r2);
+            return (r1 > r2) & (r1 < r2);
         }
 
         MatchResult IFact.Match(IFact goal, World w)
