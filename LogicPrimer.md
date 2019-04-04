@@ -171,11 +171,13 @@ These are called *rules of replacement* since you can replace one statement with
 ```
 p ^ q => p
 ```
-You can *infer* `p` from `p ^ q` but not the other way around. Disjunction works the other way around:
+You can *infer* `p` from `p ^ q` but not the other way around. Disjunction works the opposite way:
 ```
 p => p v q
 ```
 
-# LogSharp
+## LogSharp
 
-The `Fact`s and `Rule`s added to a `World` represent premises and queries represent possible conclusions. A query is true iff the 
+The `Fact`s and `Rule`s added to a `World` represent premises and queries represent possible conclusions. A query is true iff it is a consequence of the premises. This is where the power of logical programming comes in, it is all state and no functions. There are no moving parts, but state can force other state. For example, [this](https://www.cpp.edu/~jrfisher/www/prolog_tutorial/2_8.html) prolog example shows a complete change calculator that only uses *one rule* added to the world. 
+
+LogSharp is an attempt to bring this power into a context where it can be used. 
