@@ -8,7 +8,10 @@ namespace LogSharp
 
         public Fact this[params object[] args]
         {
-            get { return new Fact(this, args); }
+            get
+            {
+                return new Fact(this, args);
+            }
         }
 
         /// <summary>
@@ -20,7 +23,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator >(Rule r1, IFact r2)
         {
-            return new ImpliedRule(r1,r2);
+            return new ImpliedRule(r1, r2);
             //return (!r1) | r2;
         }
         /// <summary>
@@ -32,7 +35,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator <(Rule r1, IFact r2)
         {
-            return new ImpliedRule(r2,r1);
+            return new ImpliedRule(r2, r1);
         }
 
         public static Rule IFF(Rule r1, IFact r2)
@@ -52,7 +55,7 @@ namespace LogSharp
 
         public static Rule operator &(Rule r1, IFact r2)
         {
-            return new ConjoinedRule(r1,r2);
+            return new ConjoinedRule(r1, r2);
         }
 
         public static Rule operator ^(Rule r1, IFact r2)
@@ -62,7 +65,7 @@ namespace LogSharp
 
         public static Rule operator |(Rule r1, IFact r2)
         {
-            return new DisjoinedRule(r1,r2);
+            return new DisjoinedRule(r1, r2);
         }
 
         public static Rule operator !(Rule r1)
@@ -87,10 +90,10 @@ namespace LogSharp
 
             MatchResult IFact.Match(IFact goal, World w)
             {
-                var sat = MatchResult.WeaklyContradicted;
+                var sat = MatchResult.Incompatible;
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
-                switch(l)
+                switch (l)
                 {
                     case MatchResult.Contradicted:
                         return l;
@@ -98,17 +101,17 @@ namespace LogSharp
                         sat = l;
                         break;
                 }
-                switch(r)
+                switch (r)
                 {
                     case MatchResult.Contradicted:
                         return r;
                     case MatchResult.Satisfied:
-                        if(sat == r) return r;
+                        if (sat == r) return r;
                         break;
                 }
-                return MatchResult.WeaklyContradicted;
+                return MatchResult.Incompatible;
             }
-            
+
             bool IFact.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied() && _right.VariablesSatisfied();
@@ -127,10 +130,10 @@ namespace LogSharp
 
             MatchResult IFact.Match(IFact goal, World w)
             {
-                var con = MatchResult.WeaklyContradicted;
+                var con = MatchResult.Incompatible;
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
-                switch(l)
+                switch (l)
                 {
                     case MatchResult.Satisfied:
                         return l;
@@ -138,17 +141,17 @@ namespace LogSharp
                         con = l;
                         break;
                 }
-                switch(r)
+                switch (r)
                 {
                     case MatchResult.Satisfied:
                         return r;
                     case MatchResult.Contradicted:
-                        if(con == r) return r;
+                        if (con == r) return r;
                         break;
                 }
                 return con;
             }
-            
+
             bool IFact.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied() && _right.VariablesSatisfied();
@@ -167,18 +170,19 @@ namespace LogSharp
 
             MatchResult IFact.Match(IFact goal, World w)
             {
-                var imp = MatchResult.WeaklyContradicted;
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
                 Console.WriteLine(l + " => " + r);
-                if(l == MatchResult.Contradicted)
+                if (l == MatchResult.Contradicted)
                     return MatchResult.Satisfied;
-                else if(r == MatchResult.Satisfied)
+                else if (r == MatchResult.Satisfied)
                     return MatchResult.Satisfied;
-                else if(l == MatchResult.Satisfied && r == MatchResult.Contradicted)
+                else if (l == MatchResult.Satisfied && r == MatchResult.Contradicted)
                     return MatchResult.Contradicted;
+                else if (l == MatchResult.Satisfied && r == MatchResult.Incompatible)
+                    return MatchResult.Incompatible;
 
-                return MatchResult.WeaklyContradicted;
+                return MatchResult.Compatible;
             }
 
             bool IFact.VariablesSatisfied()
@@ -198,8 +202,8 @@ namespace LogSharp
             MatchResult IFact.Match(IFact goal, World w)
             {
                 var match = _left.Match(goal, w);
-                MatchResult res = MatchResult.WeaklyContradicted;
-                switch(match)
+                MatchResult res;
+                switch (match)
                 {
                     case MatchResult.Satisfied:
                         res = MatchResult.Contradicted;
@@ -207,11 +211,14 @@ namespace LogSharp
                     case MatchResult.Contradicted:
                         res = MatchResult.Satisfied;
                         break;
-                    case MatchResult.WeaklyContradicted:
-                        res = MatchResult.WeaklySatisfied;
+                    case MatchResult.Incompatible:
+                        res = MatchResult.Compatible;
                         break;
-                    case MatchResult.WeaklySatisfied:
-                        res = MatchResult.WeaklyContradicted;
+                    case MatchResult.Compatible:
+                        res = MatchResult.Compatible;
+                        break;
+                    default:
+                        res = 0;
                         break;
                 }
                 return res;

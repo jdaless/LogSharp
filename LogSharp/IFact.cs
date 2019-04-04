@@ -20,8 +20,8 @@ namespace LogSharp
         
         Weak = 0b01,
         // Could be true in the domain
-        WeaklySatisfied = 0b11,
+        Compatible = 0b11,
         // Could be false in the domain
-        WeaklyContradicted = 0b01
+        Incompatible = 0b01
     }
 }

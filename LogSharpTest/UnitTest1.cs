@@ -3,6 +3,7 @@ using LogSharp;
 using System.Linq;
 using System;
 
+#pragma warning disable 1718
 namespace UnitTests
 {
     [TestClass]
@@ -35,8 +36,12 @@ namespace UnitTests
             Fact somethingTrue = new Fact();
             w.Add(somethingTrue);
 
-            // Create a fact that is not added to the world
+            // Create a fact whose negation is added to the world
             Fact somethingFalse = new Fact();
+            w.Add(!somethingFalse);
+
+            // Create a fact that is not represented in the world at all
+            Fact somethingElse = new Fact();
 
             Assert.IsTrue(w.Query(somethingTrue));
             Assert.IsFalse(w.Query(somethingFalse));
@@ -45,6 +50,11 @@ namespace UnitTests
             Assert.IsTrue(w.Query(!!somethingTrue));
 
             Assert.IsTrue(w.Query(!somethingFalse));
+            Assert.IsFalse(w.Query(!!somethingFalse));
+
+            Assert.IsFalse(w.Query(somethingElse));
+            Assert.IsFalse(w.Query(!somethingElse));
+            Assert.IsFalse(w.Query(!!somethingElse));
 
         }
 

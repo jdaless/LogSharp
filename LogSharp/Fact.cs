@@ -18,7 +18,7 @@ namespace LogSharp
             _arity = (uint)args.Length;
             _functor = r;
             _id = Guid.NewGuid();
-            _satisfied = Enumerable.Repeat(MatchResult.WeaklyContradicted, (int)_arity).ToArray();
+            _satisfied = Enumerable.Repeat(MatchResult.Incompatible, (int)_arity).ToArray();
         }
         public Fact()
         {
@@ -31,12 +31,12 @@ namespace LogSharp
 
         // override object.Equals
         public override bool Equals(object obj)
-        {            
+        {
             if (obj == null || GetType() != obj.GetType())
             {
                 return false;
             }
-            
+
             var f = (Fact)obj;
 
             if (f._functor == null && this._functor == null)
@@ -47,13 +47,13 @@ namespace LogSharp
             {
                 return false;
             }
-            for(int i=0; i<_arity; i++)
+            for (int i = 0; i < _arity; i++)
             {
                 if (!_args[i].Equals(f._args[i])) { return false; }
             }
             return true;
         }
-        
+
         // override object.GetHashCode
         public override int GetHashCode()
         {
@@ -63,37 +63,66 @@ namespace LogSharp
 
         MatchResult IFact.Match(IFact goal, World w)
         {
-            if(!(goal is Fact)) return goal.Match(this, w);
+            // let the rule handle the matching if the goal is one
+            if (!(goal is Fact)) return goal.Match(this, w);
 
-            var f = (Fact)goal;
-            if(!(f.IsCompatable(this))) return MatchResult.WeaklyContradicted;
-            if(f._arity == 0)
+            var target = (Fact)goal;
+
+            // facts that have nothing to do with eachother are
+            // always logically compatible
+            if (!(target.IsComparable(this))) return MatchResult.Compatible;
+
+            // atoms
+            if (target._arity == 0)
             {
-                return (f._id == this._id)?
-                    MatchResult.Satisfied:
-                    MatchResult.WeaklyContradicted;
+                // atoms with the same id are a match, the goal is
+                // satisfied. atoms without the same id are not a
+                // match, but are logicallty compatible with eachother
+                return (target._id == this._id) ?
+                    MatchResult.Satisfied :
+                    MatchResult.Compatible;
             }
-            for(var i=0; i< _arity; i++)
+
+            // predicates
+            for (var i = 0; i < _arity; i++)
             {
-                if(f._args[i] is Variable)
+                var targetVar = target._args[i] is Variable;
+                var factVar = _args[i] is Variable;
+                if (targetVar && factVar)
                 {
-                    if(_args[i] is Variable) 
-                        _satisfied[i] = MatchResult.WeaklyContradicted;
-                    else{
-                        ((Variable)f._args[i]).values.Add(_args[i]);
-                        _satisfied[i] = MatchResult.Satisfied;
-                    }
+                    // if both predicates have a variable in the same
+                    // place then they're compatible.
+                    _satisfied[i] = MatchResult.Compatible;
+                }
+                else if(targetVar && !factVar)
+                {
+                    // if the fact's argument is not a variable, then 
+                    // its value is a satisfying variable for the goal.
+                    ((Variable)target._args[i]).values.Add(_args[i]);
+                    _satisfied[i] = MatchResult.Satisfied;
+                }
+                else if(!targetVar && factVar)
+                {
+                    // if the target's argument is not a variable, then
+                    // its value is added to my argument
+                    ((Variable)_args[i]).values.Add(target._args[i]);
+                    _satisfied[i] = MatchResult.Satisfied;
                 }
                 else
                 {
-                    _satisfied[i] = f._args[i].Equals(_args[i])?
-                        MatchResult.Satisfied: 
-                        MatchResult.WeaklyContradicted;
+                    // neither argument is a variable, either satisfied
+                    // if they're equal or incompatible if not
+                    _satisfied[i] = target._args[i].Equals(_args[i]) ?
+                        MatchResult.Satisfied :
+                        MatchResult.Compatible;
                 }
             }
+            
+            // if all the args are satisfied then the goal is satisfied
+            // otherwise the goal is compatable
             return ((IFact)this).VariablesSatisfied()?
                 MatchResult.Satisfied:
-                MatchResult.WeaklyContradicted;
+                MatchResult.Compatible;
         }
 
         bool IFact.VariablesSatisfied()
@@ -101,7 +130,7 @@ namespace LogSharp
             return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
 
-        private bool IsCompatable(Fact f)
+        private bool IsComparable(Fact f)
         {
             return this._arity == f._arity && this._functor == f._functor;
         }
@@ -115,7 +144,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator >(Fact r1, IFact r2)
         {
-            return new Rule.ImpliedRule(r1,r2);
+            return new Rule.ImpliedRule(r1, r2);
             //return (~r1) | r2;
         }
         /// <summary>
@@ -127,7 +156,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator <(Fact r1, IFact r2)
         {
-            return new Rule.ImpliedRule(r2,r1);
+            return new Rule.ImpliedRule(r2, r1);
         }
 
         public static Rule DoubleImply(Fact r1, IFact r2)
@@ -147,7 +176,7 @@ namespace LogSharp
 
         public static Rule operator |(Fact r1, IFact r2)
         {
-            return new Rule.DisjoinedRule(r1,r2);
+            return new Rule.DisjoinedRule(r1, r2);
         }
 
         public static Rule operator !(Fact r1)

@@ -11,6 +11,8 @@ namespace LogSharp
 
         public World()
         {
+            // since this rule can't be used by the program, it
+            // literally shouldn't matter but it does ughhhh
             this.Add(new Rule()["red"]);
             // using(var x = new Variable())
             // {
@@ -25,9 +27,17 @@ namespace LogSharp
         /// </summary>
         public bool Add(IFact r)
         {
-            if (this.NonContradict(r) == MatchResult.Contradicted)
+            var match = this.NonContradict(r);
+            
+            // if goal is incompatible or directly contradicted, don't add it
+            if (match == MatchResult.Contradicted || match == MatchResult.Incompatible)
                 return false;
-            _state.Add(r);
+            
+            // if goal is satisfied, it doesn't need to be added, but return
+            // true anyway since it is part of the world.
+            if (match == MatchResult.Compatible)
+                _state.Add(r);
+
             return true;
         }
 
@@ -38,14 +48,14 @@ namespace LogSharp
         /// </summary>
         public bool Query(IFact goal)
         {
-            return this.NonContradict(goal).HasFlag(MatchResult.Satisfied);
+            return this.NonContradict(goal) == MatchResult.Satisfied;
         }
 
         private MatchResult NonContradict(IFact goal)
         {
             var sat = false;
-            Console.WriteLine("\n_state: " + _state.Count());
-            MatchResult res = MatchResult.WeaklyContradicted;
+            Console.WriteLine("_state: " + _state.Count());
+            MatchResult res = MatchResult.Compatible;
             foreach (var f in _state)
             {
                 Console.WriteLine(goal.GetType().Name
@@ -61,13 +71,13 @@ namespace LogSharp
 
             }
 
-            if (res.HasFlag(MatchResult.Weak))
-            {
-                res = sat ?
-                    MatchResult.WeaklySatisfied :
-                    MatchResult.WeaklyContradicted;
-            }
-            Console.WriteLine("Result: " + res);
+            // if (res.HasFlag(MatchResult.Weak))
+            // {
+            //     res = sat ?
+            //         MatchResult.Compatible :
+            //         MatchResult.Incompatible;
+            // }
+            Console.WriteLine("Result: " + res + "\n");
             return res;
         }
 
