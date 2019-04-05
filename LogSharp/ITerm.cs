@@ -4,13 +4,13 @@ using System.Text;
 
 namespace LogSharp
 {
-    public interface IFact
+    public interface ITerm
     {
     }
 
-    internal interface IFactInternal : IFact
+    internal interface ITermInternal : ITerm
     {
-        MatchResult Match(IFactInternal goal, World w);
+        MatchResult Match(ITermInternal goal, World w);
         bool VariablesSatisfied();
 
     }

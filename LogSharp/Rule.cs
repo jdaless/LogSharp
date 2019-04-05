@@ -2,7 +2,7 @@
 
 namespace LogSharp
 {
-    public class Rule : IFactInternal
+    public class Rule : ITermInternal
     {
         public static Rule Equality = new Rule();
 
@@ -21,9 +21,9 @@ namespace LogSharp
         /// <param name="r1">Implicator</param>
         /// <param name="r2">Implicans</param>
         /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator >(Rule r1, IFact r2)
+        public static Rule operator >(Rule r1, ITerm r2)
         {
-            return new ImpliedRule(r1, (IFactInternal)r2);
+            return new ImpliedRule(r1, (ITermInternal)r2);
             //return (!r1) | r2;
         }
         /// <summary>
@@ -33,39 +33,39 @@ namespace LogSharp
         /// <param name="r1">Implicator</param>
         /// <param name="r2">Implicans</param>
         /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator <(Rule r1, IFact r2)
+        public static Rule operator <(Rule r1, ITerm r2)
         {
-            return new ImpliedRule((IFactInternal)r2, r1);
+            return new ImpliedRule((ITermInternal)r2, r1);
         }
 
-        public static Rule IFF(Rule r1, IFact r2)
+        public static Rule IFF(Rule r1, ITerm r2)
         {
             return (r1 > r2) & (r1 < r2);
         }
 
-        MatchResult IFactInternal.Match(IFactInternal goal, World w)
+        MatchResult ITermInternal.Match(ITermInternal goal, World w)
         {
             throw new NotImplementedException();
         }
 
-        bool IFactInternal.VariablesSatisfied()
+        bool ITermInternal.VariablesSatisfied()
         {
             throw new NotImplementedException();
         }
 
-        public static Rule operator &(Rule r1, IFact r2)
+        public static Rule operator &(Rule r1, ITerm r2)
         {
-            return new ConjoinedRule(r1, (IFactInternal)r2);
+            return new ConjoinedRule(r1, (ITermInternal)r2);
         }
 
-        public static Rule operator ^(Rule r1, IFact r2)
+        public static Rule operator ^(Rule r1, ITerm r2)
         {
             return r1 & r2;
         }
 
-        public static Rule operator |(Rule r1, IFact r2)
+        public static Rule operator |(Rule r1, ITerm r2)
         {
-            return new DisjoinedRule(r1, (IFactInternal)r2);
+            return new DisjoinedRule(r1, (ITermInternal)r2);
         }
 
         public static Rule operator !(Rule r1)
@@ -78,17 +78,17 @@ namespace LogSharp
             return !r1;
         }
 
-        internal class ConjoinedRule : Rule, IFact, IFactInternal
+        internal class ConjoinedRule : Rule, ITerm, ITermInternal
         {
-            private IFactInternal _left;
-            private IFactInternal _right;
-            public ConjoinedRule(IFactInternal a, IFactInternal b)
+            private ITermInternal _left;
+            private ITermInternal _right;
+            public ConjoinedRule(ITermInternal a, ITermInternal b)
             {
                 _left = a;
                 _right = b;
             }
 
-            MatchResult IFactInternal.Match(IFactInternal goal, World w)
+            MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
                 var sat = MatchResult.Incompatible;
                 var l = _left.Match(goal, w);
@@ -112,23 +112,23 @@ namespace LogSharp
                 return MatchResult.Incompatible;
             }
 
-            bool IFactInternal.VariablesSatisfied()
+            bool ITermInternal.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied() && _right.VariablesSatisfied();
             }
         }
 
-        internal class DisjoinedRule : Rule, IFactInternal
+        internal class DisjoinedRule : Rule, ITermInternal
         {
-            private IFactInternal _left;
-            private IFactInternal _right;
-            public DisjoinedRule(IFactInternal a, IFactInternal b)
+            private ITermInternal _left;
+            private ITermInternal _right;
+            public DisjoinedRule(ITermInternal a, ITermInternal b)
             {
                 _left = a;
                 _right = b;
             }
 
-            MatchResult IFactInternal.Match(IFactInternal goal, World w)
+            MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
                 var con = MatchResult.Incompatible;
                 var l = _left.Match(goal, w);
@@ -152,23 +152,23 @@ namespace LogSharp
                 return con;
             }
 
-            bool IFactInternal.VariablesSatisfied()
+            bool ITermInternal.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied() && _right.VariablesSatisfied();
             }
         }
 
-        internal class ImpliedRule : Rule, IFactInternal
+        internal class ImpliedRule : Rule, ITermInternal
         {
-            private IFactInternal _left;
-            private IFactInternal _right;
-            public ImpliedRule(IFactInternal a, IFactInternal b)
+            private ITermInternal _left;
+            private ITermInternal _right;
+            public ImpliedRule(ITermInternal a, ITermInternal b)
             {
                 _left = a;
                 _right = b;
             }
 
-            MatchResult IFactInternal.Match(IFactInternal goal, World w)
+            MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
@@ -185,21 +185,21 @@ namespace LogSharp
                 return MatchResult.Compatible;
             }
 
-            bool IFactInternal.VariablesSatisfied()
+            bool ITermInternal.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied() && _right.VariablesSatisfied();
             }
         }
 
-        internal class NegatedRule : Rule, IFactInternal
+        internal class NegatedRule : Rule, ITermInternal
         {
-            private IFactInternal _left;
-            public NegatedRule(IFactInternal a)
+            private ITermInternal _left;
+            public NegatedRule(ITermInternal a)
             {
                 _left = a;
             }
 
-            MatchResult IFactInternal.Match(IFactInternal goal, World w)
+            MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
                 var match = _left.Match(goal, w);
                 MatchResult res;
@@ -224,7 +224,7 @@ namespace LogSharp
                 return res;
             }
 
-            bool IFactInternal.VariablesSatisfied()
+            bool ITermInternal.VariablesSatisfied()
             {
                 return _left.VariablesSatisfied();
             }

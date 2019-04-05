@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LogSharp
 {
-    public class Fact : IFactInternal
+    public class Fact : ITermInternal
     {
         private readonly uint _arity;
         internal readonly object[] _args;
@@ -61,7 +61,7 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        MatchResult IFactInternal.Match(IFactInternal goal, World w)
+        MatchResult ITermInternal.Match(ITermInternal goal, World w)
         {
             // let the rule handle the matching if the goal is one
             if (!(goal is Fact)) return goal.Match(this, w);
@@ -120,12 +120,12 @@ namespace LogSharp
             
             // if all the args are satisfied then the goal is satisfied
             // otherwise the goal is compatable
-            return ((IFactInternal)this).VariablesSatisfied()?
+            return ((ITermInternal)this).VariablesSatisfied()?
                 MatchResult.Satisfied:
                 MatchResult.Compatible;
         }
 
-        bool IFactInternal.VariablesSatisfied()
+        bool ITermInternal.VariablesSatisfied()
         {
             return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
@@ -142,9 +142,9 @@ namespace LogSharp
         /// <param name="r1">Implicator</param>
         /// <param name="r2">Implicans</param>
         /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator >(Fact r1, IFact r2)
+        public static Rule operator >(Fact r1, ITerm r2)
         {
-            return new Rule.ImpliedRule(r1, (IFactInternal)r2);
+            return new Rule.ImpliedRule(r1, (ITermInternal)r2);
             //return (~r1) | r2;
         }
         /// <summary>
@@ -154,29 +154,29 @@ namespace LogSharp
         /// <param name="r1">Implicator</param>
         /// <param name="r2">Implicans</param>
         /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator <(Fact r1, IFact r2)
+        public static Rule operator <(Fact r1, ITerm r2)
         {
-            return new Rule.ImpliedRule((IFactInternal)r2, r1);
+            return new Rule.ImpliedRule((ITermInternal)r2, r1);
         }
 
-        public static Rule DoubleImply(Fact r1, IFact r2)
+        public static Rule DoubleImply(Fact r1, ITerm r2)
         {
             return (r1 > r2) ^ (r1 < r2);
         }
 
-        public static Rule operator &(Fact r1, IFact r2)
+        public static Rule operator &(Fact r1, ITerm r2)
         {
-            return new Rule.ConjoinedRule(r1, (IFactInternal)r2);
+            return new Rule.ConjoinedRule(r1, (ITermInternal)r2);
         }
 
-        public static Rule operator ^(Fact r1, IFact r2)
+        public static Rule operator ^(Fact r1, ITerm r2)
         {
             return r1 & r2;
         }
 
-        public static Rule operator |(Fact r1, IFact r2)
+        public static Rule operator |(Fact r1, ITerm r2)
         {
-            return new Rule.DisjoinedRule(r1, (IFactInternal)r2);
+            return new Rule.DisjoinedRule(r1, (ITermInternal)r2);
         }
 
         public static Rule operator !(Fact r1)

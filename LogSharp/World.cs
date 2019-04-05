@@ -6,7 +6,7 @@ namespace LogSharp
 {
     public class World
     {
-        private readonly IList<IFactInternal> _state = new List<IFactInternal>();
+        private readonly IList<ITermInternal> _state = new List<ITermInternal>();
 
 
         public World()
@@ -25,7 +25,7 @@ namespace LogSharp
         /// returns false and fails to add the rule if the new rule would 
         /// create a contradiction.
         /// </summary>
-        public bool Add(IFact r)
+        public bool Add(ITerm r)
         {
             var match = this.NonContradict(r);
 
@@ -36,7 +36,7 @@ namespace LogSharp
             // if goal is satisfied, it doesn't need to be added, but return
             // true anyway since it is part of the world.
             if (match == MatchResult.Compatible)
-                _state.Add((IFactInternal) r);
+                _state.Add((ITermInternal) r);
 
             return true;
         }
@@ -46,12 +46,12 @@ namespace LogSharp
         /// without adding it to the state of the world. Will set values of variables
         /// in the rules with all possible values.
         /// </summary>
-        public bool Query(IFact goal)
+        public bool Query(ITerm goal)
         {
             return this.NonContradict(goal) == MatchResult.Satisfied;
         }
 
-        private MatchResult NonContradict(IFact goal)
+        private MatchResult NonContradict(ITerm goal)
         {
             var sat = false;
             Console.WriteLine("_state: " + _state.Count());
@@ -62,7 +62,7 @@ namespace LogSharp
                     + " to "
                     + f.GetType().Name
                     + ": ");
-                var result = f.Match((IFactInternal)goal, this);
+                var result = f.Match((ITermInternal)goal, this);
                 Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;
