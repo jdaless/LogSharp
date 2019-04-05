@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LogSharp
 {
-    public class Fact : IFact
+    public class Fact : IFactInternal
     {
         private readonly uint _arity;
         internal readonly object[] _args;
@@ -61,7 +61,7 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        MatchResult IFact.Match(IFact goal, World w)
+        MatchResult IFactInternal.Match(IFactInternal goal, World w)
         {
             // let the rule handle the matching if the goal is one
             if (!(goal is Fact)) return goal.Match(this, w);
@@ -120,12 +120,12 @@ namespace LogSharp
             
             // if all the args are satisfied then the goal is satisfied
             // otherwise the goal is compatable
-            return ((IFact)this).VariablesSatisfied()?
+            return ((IFactInternal)this).VariablesSatisfied()?
                 MatchResult.Satisfied:
                 MatchResult.Compatible;
         }
 
-        bool IFact.VariablesSatisfied()
+        bool IFactInternal.VariablesSatisfied()
         {
             return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
@@ -144,7 +144,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator >(Fact r1, IFact r2)
         {
-            return new Rule.ImpliedRule(r1, r2);
+            return new Rule.ImpliedRule(r1, (IFactInternal)r2);
             //return (~r1) | r2;
         }
         /// <summary>
@@ -156,7 +156,7 @@ namespace LogSharp
         /// <returns>A new rule representing that r1 implies r2</returns>
         public static Rule operator <(Fact r1, IFact r2)
         {
-            return new Rule.ImpliedRule(r2, r1);
+            return new Rule.ImpliedRule((IFactInternal)r2, r1);
         }
 
         public static Rule DoubleImply(Fact r1, IFact r2)
@@ -166,7 +166,7 @@ namespace LogSharp
 
         public static Rule operator &(Fact r1, IFact r2)
         {
-            return new Rule.ConjoinedRule(r1, r2);
+            return new Rule.ConjoinedRule(r1, (IFactInternal)r2);
         }
 
         public static Rule operator ^(Fact r1, IFact r2)
@@ -176,7 +176,7 @@ namespace LogSharp
 
         public static Rule operator |(Fact r1, IFact r2)
         {
-            return new Rule.DisjoinedRule(r1, r2);
+            return new Rule.DisjoinedRule(r1, (IFactInternal)r2);
         }
 
         public static Rule operator !(Fact r1)

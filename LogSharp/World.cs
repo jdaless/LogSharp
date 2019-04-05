@@ -6,7 +6,7 @@ namespace LogSharp
 {
     public class World
     {
-        private readonly IList<IFact> _state = new List<IFact>();
+        private readonly IList<IFactInternal> _state = new List<IFactInternal>();
 
 
         public World()
@@ -28,15 +28,15 @@ namespace LogSharp
         public bool Add(IFact r)
         {
             var match = this.NonContradict(r);
-            
+
             // if goal is incompatible or directly contradicted, don't add it
             if (match == MatchResult.Contradicted || match == MatchResult.Incompatible)
                 return false;
-            
+
             // if goal is satisfied, it doesn't need to be added, but return
             // true anyway since it is part of the world.
             if (match == MatchResult.Compatible)
-                _state.Add(r);
+                _state.Add((IFactInternal) r);
 
             return true;
         }
@@ -62,7 +62,7 @@ namespace LogSharp
                     + " to "
                     + f.GetType().Name
                     + ": ");
-                var result = f.Match(goal, this);
+                var result = f.Match((IFactInternal)goal, this);
                 Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;

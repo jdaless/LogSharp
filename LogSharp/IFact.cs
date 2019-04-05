@@ -6,12 +6,17 @@ namespace LogSharp
 {
     public interface IFact
     {
-        MatchResult Match(IFact goal, World w);
+    }
+
+    internal interface IFactInternal : IFact
+    {
+        MatchResult Match(IFactInternal goal, World w);
         bool VariablesSatisfied();
+
     }
 
     [FlagsAttribute]
-    public enum MatchResult
+    internal enum MatchResult
     {
         // Definitely true in the domain
         Satisfied = 0b10,
