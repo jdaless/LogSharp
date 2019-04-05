@@ -18,7 +18,7 @@ namespace LogSharp
             _arity = (uint)args.Length;
             _functor = r;
             _id = Guid.NewGuid();
-            _satisfied = Enumerable.Repeat(MatchResult.Incompatible, (int)_arity).ToArray();
+            _satisfied = Enumerable.Repeat(MatchResult.Compatible, (int)_arity).ToArray();
         }
         public Fact()
         {
