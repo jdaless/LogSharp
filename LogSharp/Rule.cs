@@ -130,9 +130,10 @@ namespace LogSharp
 
             MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
-                var con = MatchResult.Incompatible;
+                var con = MatchResult.Compatible;
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
+                Console.WriteLine($"{l} v {r}");
                 switch (l)
                 {
                     case MatchResult.Satisfied:
@@ -149,7 +150,7 @@ namespace LogSharp
                         if (con == r) return r;
                         break;
                 }
-                return con;
+                return MatchResult.Compatible;
             }
 
             bool ITermInternal.VariablesSatisfied()
@@ -172,7 +173,7 @@ namespace LogSharp
             {
                 var l = _left.Match(goal, w);
                 var r = _right.Match(goal, w);
-                Console.WriteLine(l + " => " + r);
+                //Console.WriteLine(l + " => " + r);
                 if (l == MatchResult.Contradicted)
                     return MatchResult.Satisfied;
                 else if (r == MatchResult.Satisfied)
@@ -201,7 +202,7 @@ namespace LogSharp
 
             MatchResult ITermInternal.Match(ITermInternal goal, World w)
             {
-                var match = _left.Match(goal, w);
+                var match = goal.Match(_left, w);
                 MatchResult res;
                 switch (match)
                 {

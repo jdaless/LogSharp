@@ -1,0 +1,73 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using LogSharp;
+using System.Linq;
+using System;
+
+#pragma warning disable 1718
+namespace UnitTests
+{
+    [TestClass]
+    public class ComplexStuff
+    {
+        [TestMethod]
+        public void BuiltInPredicates()
+        {
+            World w = new World();
+            Assert.IsTrue(w.Query(Rule.Equality[1, 1]));
+            using (var x = new Variable())
+            {
+                w.Query(Rule.Equality[x, 5]);
+                Assert.AreEqual(x.First(), 5);
+            }
+        }
+
+        [TestMethod]
+        public void Socrates()
+        {
+            World w = new World();
+
+            // Rules with variables
+            Rule man = new Rule();
+            Rule mortal = new Rule();
+            using (var x = new Variable())
+            {
+                w.Add(man[x] > mortal[x]);
+            }
+            w.Add(man["socrates"]);
+            using (var x = new Variable())
+            {
+                Assert.IsTrue(w.Query(mortal[x]));
+                Assert.IsTrue(x.First().Equals("socrates"));
+            }
+            Assert.IsTrue(w.Query(mortal["socrates"]));
+        }
+
+        [TestMethod]
+        public void Abraham()
+        {
+            World w = new World();
+            Rule son = new Rule();
+            Rule patriarch = new Rule();
+            Rule freeborn = new Rule();
+            w.Add(son["ishmael", "abraham", "mother_is_slave"]);
+            w.Add(son["isaac", "abraham", "mother_is_free"]);
+            w.Add(patriarch["abraham"]);
+            using (var p = new Variable())
+            using (var s = new Variable())
+            using (var f = new Variable())
+            {
+                w.Add(freeborn[p, s] <
+                    patriarch[p] ^
+                    son[s, p, f] ^
+                    Rule.Equality[f, "mother_is_free"]);
+            }
+            using (var x = new Variable())
+            using (var y = new Variable())
+            {
+                w.Query(freeborn[x, y]);
+                Assert.IsTrue(x.Single().Equals("abraham"));
+                Assert.IsTrue(y.Single().Equals("isaac"));
+            }
+        }        
+    }
+}

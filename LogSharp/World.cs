@@ -30,7 +30,8 @@ namespace LogSharp
             var match = this.NonContradict(r);
 
             // if goal is incompatible or directly contradicted, don't add it
-            if (match == MatchResult.Contradicted || match == MatchResult.Incompatible)
+            if (match == MatchResult.Contradicted 
+                || match == MatchResult.Incompatible || r is Rule.NegatedRule)
                 return false;
 
             // if goal is satisfied, it doesn't need to be added, but return
@@ -54,16 +55,16 @@ namespace LogSharp
         private MatchResult NonContradict(ITerm goal)
         {
             var sat = false;
-            Console.WriteLine("_state: " + _state.Count());
+            //Console.WriteLine("_state: " + _state.Count());
             MatchResult res = MatchResult.Compatible;
             foreach (var f in _state)
             {
-                Console.WriteLine(goal.GetType().Name
-                    + " to "
-                    + f.GetType().Name
-                    + ": ");
+                // Console.WriteLine(goal.GetType().Name
+                //     + " to "
+                //     + f.GetType().Name
+                //     + ": ");
                 var result = f.Match((ITermInternal)goal, this);
-                Console.WriteLine(result);
+                //Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;
                 else if (result.HasFlag(MatchResult.Satisfied))
@@ -77,7 +78,7 @@ namespace LogSharp
             //         MatchResult.Compatible :
             //         MatchResult.Incompatible;
             // }
-            Console.WriteLine("Result: " + res + "\n");
+            //Console.WriteLine("Result: " + res + "\n");
             return res;
         }
 
