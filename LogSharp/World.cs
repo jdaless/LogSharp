@@ -6,14 +6,14 @@ namespace LogSharp
 {
     public class World
     {
-        private readonly IList<ITermInternal> _state = new List<ITermInternal>();
+        private readonly IList<Term> _state = new List<Term>();
 
 
         public World()
         {
             // since this rule can't be used by the program, it
             // literally shouldn't matter but it does ughhhh
-            this.Add(new Rule()["red"]);
+            this.Add(new Predicate()["red"]);
             // using(var x = new Variable())
             // {
             //     this.Add(Rule.Equality[x, x]);
@@ -25,7 +25,7 @@ namespace LogSharp
         /// returns false and fails to add the rule if the new rule would 
         /// create a contradiction.
         /// </summary>
-        public bool Add(ITerm r)
+        public bool Add(Term r)
         {
             var match = this.NonContradict(r);
 
@@ -36,8 +36,8 @@ namespace LogSharp
 
             // if goal is satisfied, it doesn't need to be added, but return
             // true anyway since it is part of the world.
-            if (match == MatchResult.Compatible && ! (r is Rule.NegatedRule))
-                _state.Add((ITermInternal) r);
+            if (match == MatchResult.Compatible && ! (r is Negation))
+                _state.Add(r);
 
             return true;
         }
@@ -47,12 +47,12 @@ namespace LogSharp
         /// without adding it to the state of the world. Will set values of variables
         /// in the rules with all possible values.
         /// </summary>
-        public bool Query(ITerm goal)
+        public bool Query(Term goal)
         {
             return this.NonContradict(goal) == MatchResult.Satisfied;
         }
 
-        private MatchResult NonContradict(ITerm goal)
+        private MatchResult NonContradict(Term goal)
         {
             //var sat = false;
             //Console.WriteLine("_state: " + _state.Count());
@@ -63,7 +63,7 @@ namespace LogSharp
                 //     + " to "
                 //     + f.GetType().Name
                 //     + ": ");
-                var result = f.Match((ITermInternal)goal, this);
+                var result = f.Match(goal, this);
                 //Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;

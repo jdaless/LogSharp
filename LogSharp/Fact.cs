@@ -5,14 +5,14 @@ using System.Linq;
 
 namespace LogSharp
 {
-    public class Fact : ITermInternal
+    public class Fact : Term
     {
         private readonly uint _arity;
         internal readonly object[] _args;
         private readonly MatchResult[] _satisfied;
-        internal readonly Rule _functor;
+        internal readonly Predicate _functor;
         private readonly Guid _id;
-        public Fact(Rule r, object[] args)
+        public Fact(Predicate r, object[] args)
         {
             _args = args;
             _arity = (uint)args.Length;
@@ -59,7 +59,7 @@ namespace LogSharp
             throw new System.NotImplementedException();
         }
 
-        MatchResult ITermInternal.Match(ITermInternal goal, World w)
+        internal override MatchResult Match(Term goal, World w)
         {
             // let the rule handle the matching if the goal is one
             if (!(goal is Fact)) return goal.Match(this, w);
@@ -118,12 +118,12 @@ namespace LogSharp
             
             // if all the args are satisfied then the goal is satisfied
             // otherwise the goal is compatable
-            return ((ITermInternal)this).VariablesSatisfied()?
+            return this.VariablesSatisfied()?
                 MatchResult.Satisfied:
                 MatchResult.Compatible;
         }
 
-        bool ITermInternal.VariablesSatisfied()
+        internal override bool VariablesSatisfied()
         {
             return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
@@ -131,72 +131,6 @@ namespace LogSharp
         private bool IsComparable(Fact f)        
         {
             return this._arity == f._arity && this._functor == f._functor;
-        }
-
-        public Rule Not()
-        {
-            return new Rule.NegatedRule(this);
-        }
-
-        public Rule Implies(ITerm t2)
-        {
-            return new Rule.ImpliedRule(this, (ITermInternal)t2);
-        }
-
-        public Rule If(ITerm t2)
-        {
-            return t2.Implies(this);
-        }
-
-        public Rule Conjoin(ITerm t2)
-        {
-            return new Rule.ConjoinedRule(this, (ITermInternal) t2);
-        }
-
-        public Rule Disjoin(ITerm t2)
-        {
-            return new Rule.DisjoinedRule(this, (ITermInternal) t2);
-        }
-
-        public Rule IFF(ITerm t2)
-        {            
-            return this.Conjoin(t2).Disjoin(this.Not().Conjoin(t2.Not()));
-        }
-
-        public static Rule operator >(Fact r1, ITerm r2)
-        {
-            return r1.Implies(r2);
-        }
-
-        public static Rule operator <(Fact r1, ITerm r2)
-        {
-            return r2.Implies(r1);
-        }
-
-
-        public static Rule operator &(Fact r1, ITerm r2)
-        {
-            return r1.Conjoin(r2);
-        }
-
-        public static Rule operator ^(Fact r1, ITerm r2)
-        {
-            return r1.Conjoin(r2);
-        }
-
-        public static Rule operator |(Fact r1, ITerm r2)
-        {
-            return r1.Disjoin(r2);
-        }
-
-        public static Rule operator !(Fact r1)
-        {
-            return r1.Not();
-        }
-
-        public static Rule operator ~(Fact r1)
-        {
-            return r1.Not();
         }
     }
 }

@@ -12,7 +12,7 @@ namespace UnitTests
         World w = new World();
 
         // Predicates with names
-        Rule red = new Rule();
+        Predicate red = new Predicate();
 
         [TestInitialize]
         public void PrepWorld()

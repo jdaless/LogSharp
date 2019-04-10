@@ -14,7 +14,7 @@ namespace UnitTests
         public void Relationships()
         {
             World w = new World();
-            Rule likes = new Rule();
+            Predicate likes = new Predicate();
             w.Add(likes["mary", "food"]);
             w.Add(likes["mary", "wine"]);
             w.Add(likes["john", "wine"]);
@@ -28,7 +28,7 @@ namespace UnitTests
         public void RuleBinding()
         {
             World w = new World();
-            Rule likes = new Rule();
+            Predicate likes = new Predicate();
 
             // Alice likes anyone
             w.Add(likes["alice", Variable._]);
@@ -46,7 +46,7 @@ namespace UnitTests
         public void MixingTypes()
         {
             World w = new World();
-            Rule isCalled = new Rule();
+            Predicate isCalled = new Predicate();
 
             w.Add(isCalled[9, "nine"]);
             w.Add(isCalled["IX", "nine"]);

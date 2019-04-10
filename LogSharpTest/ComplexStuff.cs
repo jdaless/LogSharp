@@ -13,10 +13,10 @@ namespace UnitTests
         public void BuiltInPredicates()
         {
             World w = new World();
-            Assert.IsTrue(w.Query(Rule.Equality[1, 1]));
+            Assert.IsTrue(w.Query(Predicate.Equality[1, 1]));
             using (var x = new Variable())
             {
-                w.Query(Rule.Equality[x, 5]);
+                w.Query(Predicate.Equality[x, 5]);
                 Assert.AreEqual(x.First(), 5);
             }
         }
@@ -27,8 +27,8 @@ namespace UnitTests
             World w = new World();
 
             // Rules with variables
-            Rule man = new Rule();
-            Rule mortal = new Rule();
+            Predicate man = new Predicate();
+            Predicate mortal = new Predicate();
             using (var x = new Variable())
             {
                 w.Add(man[x] > mortal[x]);
@@ -46,9 +46,9 @@ namespace UnitTests
         public void Abraham()
         {
             World w = new World();
-            Rule son = new Rule();
-            Rule patriarch = new Rule();
-            Rule freeborn = new Rule();
+            Predicate son = new Predicate();
+            Predicate patriarch = new Predicate();
+            Predicate freeborn = new Predicate();
             w.Add(son["ishmael", "abraham", "mother_is_slave"]);
             w.Add(son["isaac", "abraham", "mother_is_free"]);
             w.Add(patriarch["abraham"]);
@@ -56,10 +56,11 @@ namespace UnitTests
             using (var s = new Variable())
             using (var f = new Variable())
             {
-                w.Add(freeborn[p, s] <
-                    patriarch[p] ^
-                    son[s, p, f] ^
-                    Rule.Equality[f, "mother_is_free"]);
+                w.Add(freeborn[p, s] < (
+                            patriarch[p] ^
+                            son[s, p, f] ^
+                            Predicate.Equality[f, "mother_is_free"])
+                        );
             }
             using (var x = new Variable())
             using (var y = new Variable())
