@@ -31,12 +31,12 @@ namespace LogSharp
 
             // if goal is incompatible or directly contradicted, don't add it
             if (match == MatchResult.Contradicted 
-                || match == MatchResult.Incompatible || r is Rule.NegatedRule)
+                || match == MatchResult.Incompatible)
                 return false;
 
             // if goal is satisfied, it doesn't need to be added, but return
             // true anyway since it is part of the world.
-            if (match == MatchResult.Compatible)
+            if (match == MatchResult.Compatible && ! (r is Rule.NegatedRule))
                 _state.Add((ITermInternal) r);
 
             return true;
@@ -54,7 +54,7 @@ namespace LogSharp
 
         private MatchResult NonContradict(ITerm goal)
         {
-            var sat = false;
+            //var sat = false;
             //Console.WriteLine("_state: " + _state.Count());
             MatchResult res = MatchResult.Compatible;
             foreach (var f in _state)
@@ -67,8 +67,8 @@ namespace LogSharp
                 //Console.WriteLine(result);
                 if (!result.HasFlag(MatchResult.Weak))
                     res = result;
-                else if (result.HasFlag(MatchResult.Satisfied))
-                    sat = true;
+                else if (result.HasFlag(MatchResult.Satisfied)){}
+                    //sat = true;
 
             }
 

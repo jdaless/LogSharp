@@ -14,35 +14,6 @@ namespace LogSharp
             }
         }
 
-        /// <summary>
-        /// Right implication, the rule is satisfied if the right argument 
-        /// follows from the left one.
-        /// </summary>
-        /// <param name="r1">Implicator</param>
-        /// <param name="r2">Implicans</param>
-        /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator >(Rule r1, ITerm r2)
-        {
-            return new ImpliedRule(r1, (ITermInternal)r2);
-            //return (!r1) | r2;
-        }
-        /// <summary>
-        /// Left implication, the rule is satisfied if the left argument 
-        /// follows from the right one. Similar to the Prolog :- operator.
-        /// </summary>
-        /// <param name="r1">Implicator</param>
-        /// <param name="r2">Implicans</param>
-        /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator <(Rule r1, ITerm r2)
-        {
-            return new ImpliedRule((ITermInternal)r2, r1);
-        }
-
-        public static Rule IFF(Rule r1, ITerm r2)
-        {
-            return (r1 > r2) & (r1 < r2);
-        }
-
         MatchResult ITermInternal.Match(ITermInternal goal, World w)
         {
             throw new NotImplementedException();
@@ -53,32 +24,73 @@ namespace LogSharp
             throw new NotImplementedException();
         }
 
+        public Rule Not()
+        {
+            return new NegatedRule(this);
+        }
+
+        public Rule Implies(ITerm t2)
+        {
+            return new ImpliedRule(this, (ITermInternal)t2);
+        }
+
+        public Rule If(ITerm t2)
+        {
+            return t2.Implies(this);
+        }
+
+        public Rule Conjoin(ITerm t2)
+        {
+            return new ConjoinedRule(this, (ITermInternal)t2);
+        }
+
+        public Rule Disjoin(ITerm t2)
+        {
+            return new DisjoinedRule(this, (ITermInternal)t2);
+        }
+
+        public Rule IFF(ITerm t2)
+        {
+            return this.Conjoin(t2).Disjoin(this.Not().Conjoin(t2.Not()));
+        }
+
+        public static Rule operator >(Rule r1, ITerm r2)
+        {
+            return r1.Implies(r2);
+            //return (!r1) | r2;
+        }
+        
+        public static Rule operator <(Rule r1, ITerm r2)
+        {
+            return r2.Implies(r1);
+        }
+        
         public static Rule operator &(Rule r1, ITerm r2)
         {
-            return new ConjoinedRule(r1, (ITermInternal)r2);
+            return r1.Conjoin(r2);
         }
 
         public static Rule operator ^(Rule r1, ITerm r2)
         {
-            return r1 & r2;
+            return r1.Conjoin(r2);
         }
 
         public static Rule operator |(Rule r1, ITerm r2)
         {
-            return new DisjoinedRule(r1, (ITermInternal)r2);
+            return r1.Disjoin(r2);
         }
 
         public static Rule operator !(Rule r1)
         {
-            return new NegatedRule(r1);
+            return r1.Not();
         }
 
         public static Rule operator ~(Rule r1)
         {
-            return !r1;
+            return r1.Not();
         }
 
-        internal class ConjoinedRule : Rule, ITerm, ITermInternal
+        internal class ConjoinedRule : Rule, ITermInternal
         {
             private ITermInternal _left;
             private ITermInternal _right;
@@ -230,7 +242,6 @@ namespace LogSharp
                 return _left.VariablesSatisfied();
             }
         }
-
         // internal class CustomRule : Rule, IFact
         // {
         //     private Func<IFact, World, MatchResult> _match;

@@ -29,16 +29,15 @@ namespace UnitTests
         public void Negation()
         {
             Assert.IsTrue(w.Query(somethingTrue));
-            Assert.IsFalse(w.Query(somethingFalse));
-
             Assert.IsFalse(w.Query(!somethingTrue));
             Assert.IsTrue(w.Query(!!somethingTrue));
 
+            Assert.IsFalse(w.Query(somethingFalse));
             Assert.IsTrue(w.Query(!somethingFalse));
             Assert.IsFalse(w.Query(!!somethingFalse));
 
             Assert.IsFalse(w.Query(somethingElse));
-            Assert.IsFalse(w.Query(!somethingElse));
+            Assert.IsTrue(w.Query(!somethingElse));
             Assert.IsFalse(w.Query(!!somethingElse));
         }
 
@@ -62,19 +61,21 @@ namespace UnitTests
         public void Disjunction()
         {
             // Truth table for somethingTrue and somethingFalse
-            Console.WriteLine("t v t");
             Assert.IsTrue(w.Query(somethingTrue | somethingTrue));
-            Console.WriteLine("t v f");
             Assert.IsTrue(w.Query(somethingTrue | somethingFalse));
-            Console.WriteLine("f v t");
             Assert.IsTrue(w.Query(somethingFalse | somethingTrue));
-            Console.WriteLine("f v f");
             Assert.IsFalse(w.Query(somethingFalse | somethingFalse));
             
             // Truth table for somethingTrue and somethingElse
             Assert.IsTrue(w.Query(somethingTrue | somethingTrue));
             Assert.IsTrue(w.Query(somethingTrue | somethingElse));
             Assert.IsTrue(w.Query(somethingElse | somethingTrue));
+            Assert.IsFalse(w.Query(somethingElse | somethingElse));
+            
+            // Truth table for somethingFalse and somethingElse
+            Assert.IsFalse(w.Query(somethingFalse | somethingFalse));
+            Assert.IsFalse(w.Query(somethingFalse | somethingElse));
+            Assert.IsFalse(w.Query(somethingElse | somethingFalse));
             Assert.IsFalse(w.Query(somethingElse | somethingElse));
         }
 
@@ -85,6 +86,11 @@ namespace UnitTests
             Assert.IsFalse(w.Query(somethingTrue > somethingFalse));
             Assert.IsTrue(w.Query(somethingFalse > somethingTrue));
             Assert.IsTrue(w.Query(somethingFalse > somethingFalse));
+
+            Assert.IsTrue(w.Query(somethingTrue < somethingTrue));
+            Assert.IsTrue(w.Query(somethingTrue < somethingFalse));
+            Assert.IsFalse(w.Query(somethingFalse < somethingTrue));
+            Assert.IsTrue(w.Query(somethingFalse < somethingFalse));
         }
     }
 }

@@ -29,7 +29,6 @@ namespace LogSharp
             _satisfied = new MatchResult[0];
         }
 
-        // override object.Equals
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -54,7 +53,6 @@ namespace LogSharp
             return true;
         }
 
-        // override object.GetHashCode
         public override int GetHashCode()
         {
             // TODO: write your implementation of GetHashCode() here
@@ -130,63 +128,75 @@ namespace LogSharp
             return _satisfied.All((mr) => mr == MatchResult.Satisfied);
         }
 
-        private bool IsComparable(Fact f)
+        private bool IsComparable(Fact f)        
         {
             return this._arity == f._arity && this._functor == f._functor;
         }
 
-        /// <summary>
-        /// Right implication, the rule is satisfied if the right argument 
-        /// follows from the left one.
-        /// </summary>
-        /// <param name="r1">Implicator</param>
-        /// <param name="r2">Implicans</param>
-        /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator >(Fact r1, ITerm r2)
+        public Rule Not()
         {
-            return new Rule.ImpliedRule(r1, (ITermInternal)r2);
-            //return (~r1) | r2;
-        }
-        /// <summary>
-        /// Left implication, the rule is satisfied if the left argument 
-        /// follows from the right one.
-        /// </summary>
-        /// <param name="r1">Implicator</param>
-        /// <param name="r2">Implicans</param>
-        /// <returns>A new rule representing that r1 implies r2</returns>
-        public static Rule operator <(Fact r1, ITerm r2)
-        {
-            return new Rule.ImpliedRule((ITermInternal)r2, r1);
+            return new Rule.NegatedRule(this);
         }
 
-        public static Rule DoubleImply(Fact r1, ITerm r2)
+        public Rule Implies(ITerm t2)
         {
-            return (r1 > r2) ^ (r1 < r2);
+            return new Rule.ImpliedRule(this, (ITermInternal)t2);
         }
+
+        public Rule If(ITerm t2)
+        {
+            return t2.Implies(this);
+        }
+
+        public Rule Conjoin(ITerm t2)
+        {
+            return new Rule.ConjoinedRule(this, (ITermInternal) t2);
+        }
+
+        public Rule Disjoin(ITerm t2)
+        {
+            return new Rule.DisjoinedRule(this, (ITermInternal) t2);
+        }
+
+        public Rule IFF(ITerm t2)
+        {            
+            return this.Conjoin(t2).Disjoin(this.Not().Conjoin(t2.Not()));
+        }
+
+        public static Rule operator >(Fact r1, ITerm r2)
+        {
+            return r1.Implies(r2);
+        }
+
+        public static Rule operator <(Fact r1, ITerm r2)
+        {
+            return r2.Implies(r1);
+        }
+
 
         public static Rule operator &(Fact r1, ITerm r2)
         {
-            return new Rule.ConjoinedRule(r1, (ITermInternal)r2);
+            return r1.Conjoin(r2);
         }
 
         public static Rule operator ^(Fact r1, ITerm r2)
         {
-            return r1 & r2;
+            return r1.Conjoin(r2);
         }
 
         public static Rule operator |(Fact r1, ITerm r2)
         {
-            return new Rule.DisjoinedRule(r1, (ITermInternal)r2);
+            return r1.Disjoin(r2);
         }
 
         public static Rule operator !(Fact r1)
         {
-            return new Rule.NegatedRule(r1);
+            return r1.Not();
         }
 
         public static Rule operator ~(Fact r1)
         {
-            return !r1;
+            return r1.Not();
         }
     }
 }
